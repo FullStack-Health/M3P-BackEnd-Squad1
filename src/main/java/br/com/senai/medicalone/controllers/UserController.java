@@ -1,8 +1,10 @@
 package br.com.senai.medicalone.controllers;
 
+import br.com.senai.medicalone.dtos.users.ResetPasswordRequestDTO;
 import br.com.senai.medicalone.dtos.users.UserRequestDTO;
 import br.com.senai.medicalone.entities.RoleType;
 import br.com.senai.medicalone.entities.User;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
 import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
 import br.com.senai.medicalone.services.UserService;
@@ -84,11 +86,11 @@ public class UserController {
     }
 
     @PutMapping("/email/{email}/redefinir-senha")
-    public ResponseEntity<Void> resetPassword(@PathVariable String email, @RequestBody String newPassword) {
-        if (newPassword == null || newPassword.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> resetPassword(@PathVariable String email, @RequestBody ResetPasswordRequestDTO request) {
+        if (request.getNewPassword() == null || request.getNewPassword().isEmpty()) {
+            throw new BadRequestException("Dados ausentes ou incorretos");
         }
-        userService.resetPassword(email, newPassword);
-        return new ResponseEntity<>(HttpStatus.OK);
+        userService.resetPassword(email, request.getNewPassword());
+        return new ResponseEntity<>("Senha redefinida com sucesso", HttpStatus.OK);
     }
 }
