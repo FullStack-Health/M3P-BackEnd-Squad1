@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/usuarios/login").permitAll()
                         .requestMatchers("/api/usuarios/email/{email}/redefinir-senha").permitAll()
+                        .requestMatchers("/api/usuarios/pre-registro").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling

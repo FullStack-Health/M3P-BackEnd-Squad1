@@ -1,10 +1,12 @@
 package br.com.senai.medicalone.services;
 
+import br.com.senai.medicalone.entities.PreRegisterUser;
 import br.com.senai.medicalone.entities.RoleType;
 import br.com.senai.medicalone.entities.User;
 import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
 import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
 import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
+import br.com.senai.medicalone.repositories.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,19 +20,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PreRegisterUserRepository preRegisterUserRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository, PreRegisterUserRepository preRegisterUserRepository,
+                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.preRegisterUserRepository = preRegisterUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -46,12 +51,13 @@ public class UserService {
         return createdUser;
     }
 
-    public User preRegisterUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
+
+    public PreRegisterUser preRegisterUser(PreRegisterUser preRegisterUser) {
+        if (preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        preRegisterUser.setPassword(passwordEncoder.encode(preRegisterUser.getPassword()));
+        return preRegisterUserRepository.save(preRegisterUser);
     }
 
     private String maskPassword(String password) {
@@ -103,16 +109,29 @@ public class UserService {
                     new UsernamePasswordAuthenticationToken(email, password));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+            Optional<User> userOptional = userRepository.findByEmail(email);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Map<String, Object> claims = Map.of(
+                        "id", user.getId(),
+                        "email", user.getEmail(),
+                        "role", user.getRole().name()
+                );
+                return jwtUtil.generateToken(claims, email);
+            }
 
-            Map<String, Object> claims = Map.of(
-                    "id", user.getId(),
-                    "email", user.getEmail(),
-                    "role", user.getRole().name()
-            );
+            Optional<PreRegisterUser> preRegisterUserOptional = preRegisterUserRepository.findByEmail(email);
+            if (preRegisterUserOptional.isPresent()) {
+                PreRegisterUser preRegisterUser = preRegisterUserOptional.get();
+                Map<String, Object> claims = Map.of(
+                        "id", preRegisterUser.getId(),
+                        "email", preRegisterUser.getEmail(),
+                        "role", preRegisterUser.getRole().name()
+                );
+                return jwtUtil.generateToken(claims, email);
+            }
 
-            return jwtUtil.generateToken(claims, email);
+            throw new UserNotFoundException("Usuário não encontrado");
         } catch (Exception e) {
             throw new UnauthorizedException("Credenciais inválidas");
         }

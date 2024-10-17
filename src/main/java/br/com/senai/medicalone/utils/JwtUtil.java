@@ -4,6 +4,7 @@ import br.com.senai.medicalone.entities.User;
 import br.com.senai.medicalone.exceptions.customexceptions.JwtTokenExpiredException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
@@ -87,10 +88,10 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Boolean validateToken(String token, User user) {
+    public Boolean validateToken(String token, UserDetails userDetails) {
         final String email = getEmailFromToken(token);
         final String role = getRoleFromToken(token);
-        return (email.equals(user.getEmail()) && role.equals(user.getRole().name()) && !isTokenExpired(token));
+        return (email.equals(userDetails.getUsername()) && role.equals(userDetails.getAuthorities().iterator().next().getAuthority()) && !isTokenExpired(token));
     }
 
     public String getRoleFromToken(String token) {

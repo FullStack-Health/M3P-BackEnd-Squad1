@@ -2,6 +2,7 @@ package br.com.senai.medicalone.controllers;
 
 import br.com.senai.medicalone.dtos.users.ResetPasswordRequestDTO;
 import br.com.senai.medicalone.dtos.users.UserRequestDTO;
+import br.com.senai.medicalone.entities.PreRegisterUser;
 import br.com.senai.medicalone.entities.RoleType;
 import br.com.senai.medicalone.entities.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
@@ -23,9 +24,9 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/pre-registro")
-    public ResponseEntity<User> preRegisterUser(@RequestBody User user) {
+    public ResponseEntity<PreRegisterUser> preRegisterUser(@RequestBody PreRegisterUser preRegisterUser) {
         try {
-            User createdUser = userService.preRegisterUser(user);
+            PreRegisterUser createdUser = userService.preRegisterUser(preRegisterUser);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (DataConflictException e) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
