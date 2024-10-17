@@ -2,12 +2,17 @@ package br.com.senai.medicalone.controllers;
 
 import br.com.senai.medicalone.dtos.users.ResetPasswordRequestDTO;
 import br.com.senai.medicalone.dtos.users.UserRequestDTO;
+import br.com.senai.medicalone.entities.PreRegisterUser;
 import br.com.senai.medicalone.entities.RoleType;
 import br.com.senai.medicalone.entities.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
 import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
 import br.com.senai.medicalone.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,24 +20,41 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/usuarios")
+@Tag(name = "User Controller", description = "Endpoints para gerenciamento de usuários")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
     @PostMapping("/pre-registro")
-    public ResponseEntity<User> preRegisterUser(@RequestBody User user) {
+    @Operation(summary = "Pre-register a user", description = "Endpoint para pré-registrar um usuário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Usuário pré-registrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos"),
+            @ApiResponse(responseCode = "409", description = "Email já cadastrado")
+    })
+    public ResponseEntity<Object> preRegisterUser(@RequestBody PreRegisterUser preRegisterUser) {
         try {
-            User createdUser = userService.preRegisterUser(user);
+            PreRegisterUser createdUser = userService.preRegisterUser(preRegisterUser);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (DataConflictException e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.CONFLICT);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping
+    @Operation(summary = "Create a new user", description = "Endpoint para criar um novo usuário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Role inválida ou dados ausentes"),
+            @ApiResponse(responseCode = "409", description = "Email já cadastrado")
+    })
     public ResponseEntity<User> createUser(@RequestBody User user) {
         if (user.getRole().equals(RoleType.PACIENTE)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -46,6 +68,12 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update a user", description = "Endpoint para atualizar um usuário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Role inválida ou dados ausentes"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
         if (user.getRole().equals(RoleType.PACIENTE)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -55,12 +83,22 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a user", description = "Endpoint para excluir um usuário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Usuário excluído com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get user by ID", description = "Endpoint para obter um usuário pelo ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userService.findUserById(id);
         if (user.getRole().equals(RoleType.PACIENTE)) {
@@ -70,12 +108,21 @@ public class UserController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all users", description = "Endpoint para obter todos os usuários")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso")
+    })
     public ResponseEntity<Object> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         Page<User> usersPage = (Page<User>) userService.findAllUsers(PageRequest.of(page, size));
         return new ResponseEntity<>(usersPage, HttpStatus.OK);
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Login a user", description = "Endpoint para login de um usuário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
+    })
     public ResponseEntity<String> loginUser(@RequestBody UserRequestDTO userRequestDTO) {
         try {
             String jwt = userService.loginUser(userRequestDTO.getEmail(), userRequestDTO.getPassword());
@@ -86,6 +133,11 @@ public class UserController {
     }
 
     @PutMapping("/email/{email}/redefinir-senha")
+    @Operation(summary = "Reset password", description = "Endpoint para redefinir a senha de um usuário")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Senha redefinida com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos")
+    })
     public ResponseEntity<String> resetPassword(@PathVariable String email, @RequestBody ResetPasswordRequestDTO request) {
         if (request.getNewPassword() == null || request.getNewPassword().isEmpty()) {
             throw new BadRequestException("Dados ausentes ou incorretos");
