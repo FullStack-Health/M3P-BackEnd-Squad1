@@ -119,8 +119,13 @@ public class UserService {
     }
 
     public void resetPassword(String email, String newPassword) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email não pode ser vazio");
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
