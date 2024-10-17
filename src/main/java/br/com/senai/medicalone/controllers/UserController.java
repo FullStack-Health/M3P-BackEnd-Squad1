@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/usuarios")
 public class UserController {
@@ -24,12 +26,14 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/pre-registro")
-    public ResponseEntity<PreRegisterUser> preRegisterUser(@RequestBody PreRegisterUser preRegisterUser) {
+    public ResponseEntity<Object> preRegisterUser(@RequestBody PreRegisterUser preRegisterUser) {
         try {
             PreRegisterUser createdUser = userService.preRegisterUser(preRegisterUser);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (DataConflictException e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.CONFLICT);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 

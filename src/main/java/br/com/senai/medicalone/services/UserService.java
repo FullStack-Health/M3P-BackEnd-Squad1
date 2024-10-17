@@ -3,6 +3,7 @@ package br.com.senai.medicalone.services;
 import br.com.senai.medicalone.entities.PreRegisterUser;
 import br.com.senai.medicalone.entities.RoleType;
 import br.com.senai.medicalone.entities.User;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
 import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
 import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
@@ -53,8 +54,15 @@ public class UserService {
 
 
     public PreRegisterUser preRegisterUser(PreRegisterUser preRegisterUser) {
+        if (preRegisterUser.getEmail() == null || preRegisterUser.getEmail().isEmpty() ||
+                preRegisterUser.getPassword() == null || preRegisterUser.getPassword().isEmpty()) {
+            throw new BadRequestException("Dados ausentes ou incorretos");
+        }
         if (preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
+        }
+        if (preRegisterUser.getRole() != RoleType.ADMIN && preRegisterUser.getRole() != RoleType.MEDICO) {
+            throw new BadRequestException("Role inválida. Somente ADMIN ou MEDICO são permitidos.");
         }
         preRegisterUser.setPassword(passwordEncoder.encode(preRegisterUser.getPassword()));
         return preRegisterUserRepository.save(preRegisterUser);
