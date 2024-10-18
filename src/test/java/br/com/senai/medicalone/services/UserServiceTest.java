@@ -1,5 +1,5 @@
 package br.com.senai.medicalone.services;
-
+import br.com.senai.medicalone.services.UserService;
 import br.com.senai.medicalone.entities.PreRegisterUser;
 import br.com.senai.medicalone.entities.RoleType;
 import br.com.senai.medicalone.entities.User;
@@ -9,6 +9,7 @@ import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException
 import br.com.senai.medicalone.repositories.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
@@ -48,6 +50,20 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @InjectMocks
+    private UserDetailsServiceImpl userDetailsService;
+
+    private User user;
+
+    @BeforeEach
+    public void setUp() {
+        user = new User();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+        user.setPassword(passwordEncoder.encode("password"));
+        user.setRole(RoleType.ADMIN);
+    }
 
     @Test
     public void testPreRegisterUser_Success() {
@@ -145,11 +161,6 @@ public class UserServiceTest {
 
     @Test
     public void testLoginUser_Success() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("password");
-        user.setRole(RoleType.ADMIN);
-
         Authentication authentication = mock(Authentication.class);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -157,9 +168,17 @@ public class UserServiceTest {
         when(jwtUtil.generateToken(anyMap(), eq("test@example.com"))).thenReturn("token");
 
         String token = userService.loginUser("test@example.com", "password");
-
         assertNotNull(token);
         assertEquals("token", token);
+    }
+
+    @Test
+    public void testLoginUser_UserNotFound() {
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new UsernameNotFoundException("Usuário não encontrado"));
+        assertThrows(UnauthorizedException.class, () -> {
+            userService.loginUser("test@example.com", "wrongpassword");
+        });
     }
 
     @Test
