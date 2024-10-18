@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.entities;
+package br.com.senai.medicalone.entities.user;
 
 public enum RoleType {
     MEDICO,

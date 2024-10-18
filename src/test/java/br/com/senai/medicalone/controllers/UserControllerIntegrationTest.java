@@ -1,9 +1,9 @@
 package br.com.senai.medicalone.controllers;
 
-import br.com.senai.medicalone.entities.RoleType;
-import br.com.senai.medicalone.entities.User;
-import br.com.senai.medicalone.repositories.UserRepository;
-import br.com.senai.medicalone.repositories.PreRegisterUserRepository;
+import br.com.senai.medicalone.entities.user.RoleType;
+import br.com.senai.medicalone.entities.user.User;
+import br.com.senai.medicalone.repositories.user.UserRepository;
+import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

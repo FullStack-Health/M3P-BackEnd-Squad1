@@ -1,9 +1,9 @@
-package br.com.senai.medicalone.services;
+package br.com.senai.medicalone.services.user;
 
-import br.com.senai.medicalone.entities.PreRegisterUser;
-import br.com.senai.medicalone.entities.User;
-import br.com.senai.medicalone.repositories.PreRegisterUserRepository;
-import br.com.senai.medicalone.repositories.UserRepository;
+import br.com.senai.medicalone.entities.user.PreRegisterUser;
+import br.com.senai.medicalone.entities.user.User;
+import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
+import br.com.senai.medicalone.repositories.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.dtos.users;
+package br.com.senai.medicalone.dtos.user;
 
 import lombok.Data;
 

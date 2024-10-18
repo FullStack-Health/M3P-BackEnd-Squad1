@@ -1,15 +1,15 @@
-package br.com.senai.medicalone.controllers;
+package br.com.senai.medicalone.controllers.user;
 
-import br.com.senai.medicalone.dtos.users.ResetPasswordRequestDTO;
-import br.com.senai.medicalone.dtos.users.UserRequestDTO;
-import br.com.senai.medicalone.entities.PreRegisterUser;
-import br.com.senai.medicalone.entities.RoleType;
-import br.com.senai.medicalone.entities.User;
+import br.com.senai.medicalone.dtos.user.ResetPasswordRequestDTO;
+import br.com.senai.medicalone.dtos.user.UserRequestDTO;
+import br.com.senai.medicalone.entities.user.PreRegisterUser;
+import br.com.senai.medicalone.entities.user.RoleType;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
 import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
 import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
-import br.com.senai.medicalone.services.UserService;
+import br.com.senai.medicalone.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

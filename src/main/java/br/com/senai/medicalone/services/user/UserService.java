@@ -1,11 +1,11 @@
-package br.com.senai.medicalone.services;
+package br.com.senai.medicalone.services.user;
 
-import br.com.senai.medicalone.entities.PreRegisterUser;
-import br.com.senai.medicalone.entities.RoleType;
-import br.com.senai.medicalone.entities.User;
+import br.com.senai.medicalone.entities.user.PreRegisterUser;
+import br.com.senai.medicalone.entities.user.RoleType;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.*;
-import br.com.senai.medicalone.repositories.PreRegisterUserRepository;
-import br.com.senai.medicalone.repositories.UserRepository;
+import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
+import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

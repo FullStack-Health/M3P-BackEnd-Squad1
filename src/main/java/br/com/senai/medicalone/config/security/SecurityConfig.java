@@ -1,6 +1,6 @@
-package br.com.senai.medicalone.config;
+package br.com.senai.medicalone.config.security;
 
-import br.com.senai.medicalone.services.UserDetailsServiceImpl;
+import br.com.senai.medicalone.services.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

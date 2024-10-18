@@ -1,6 +1,6 @@
-package br.com.senai.medicalone.repositories;
+package br.com.senai.medicalone.repositories.user;
 
-import br.com.senai.medicalone.entities.PreRegisterUser;
+import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

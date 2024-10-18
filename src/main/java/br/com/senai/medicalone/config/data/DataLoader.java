@@ -1,8 +1,8 @@
-package br.com.senai.medicalone.config;
+package br.com.senai.medicalone.config.data;
 
-import br.com.senai.medicalone.entities.RoleType;
-import br.com.senai.medicalone.entities.User;
-import br.com.senai.medicalone.repositories.UserRepository;
+import br.com.senai.medicalone.entities.user.RoleType;
+import br.com.senai.medicalone.entities.user.User;
+import br.com.senai.medicalone.repositories.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;

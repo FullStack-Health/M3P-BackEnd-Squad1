@@ -1,7 +1,6 @@
-package br.com.senai.medicalone.config;
+package br.com.senai.medicalone.config.security;
 
-import br.com.senai.medicalone.entities.User;
-import br.com.senai.medicalone.services.UserDetailsServiceImpl;
+import br.com.senai.medicalone.services.user.UserDetailsServiceImpl;
 import br.com.senai.medicalone.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
