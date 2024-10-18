@@ -3,10 +3,7 @@ package br.com.senai.medicalone.services;
 import br.com.senai.medicalone.entities.PreRegisterUser;
 import br.com.senai.medicalone.entities.RoleType;
 import br.com.senai.medicalone.entities.User;
-import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
-import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
-import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
-import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
+import br.com.senai.medicalone.exceptions.customexceptions.*;
 import br.com.senai.medicalone.repositories.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
@@ -48,11 +45,15 @@ public class UserService {
     @Operation(summary = "Create a new user", description = "Método para criar um novo usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
-            @ApiResponse(responseCode = "409", description = "Email já cadastrado")
+            @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
     })
     public User createUser(User user) {
+        validateUserFields(user);
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
+        }
+        if (userRepository.existsByCpf(user.getCpf())) {
+            throw new DataConflictException("CPF já cadastrado.");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User createdUser = userRepository.save(user);
@@ -67,10 +68,7 @@ public class UserService {
             @ApiResponse(responseCode = "409", description = "Email já cadastrado")
     })
     public PreRegisterUser preRegisterUser(PreRegisterUser preRegisterUser) {
-        if (preRegisterUser.getEmail() == null || preRegisterUser.getEmail().isEmpty() ||
-                preRegisterUser.getPassword() == null || preRegisterUser.getPassword().isEmpty()) {
-            throw new BadRequestException("Dados ausentes ou incorretos");
-        }
+        validatePreRegisterUserFields(preRegisterUser);
         if (preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
         }
@@ -80,6 +78,27 @@ public class UserService {
         preRegisterUser.setPassword(passwordEncoder.encode(preRegisterUser.getPassword()));
         return preRegisterUserRepository.save(preRegisterUser);
     }
+
+    private void validateUserFields(User user) {
+        if (user.getName() == null || user.getName().isEmpty() ||
+                user.getEmail() == null || user.getEmail().isEmpty() ||
+                user.getBirthDate() == null ||
+                user.getPhone() == null || user.getPhone().isEmpty() ||
+                user.getCpf() == null || user.getCpf().isEmpty() ||
+                user.getPassword() == null || user.getPassword().isEmpty() ||
+                user.getRole() == null) {
+            throw new ValidationException("Dados ausentes ou incorretos");
+        }
+    }
+
+    private void validatePreRegisterUserFields(PreRegisterUser preRegisterUser) {
+        if (preRegisterUser.getEmail() == null || preRegisterUser.getEmail().isEmpty() ||
+                preRegisterUser.getPassword() == null || preRegisterUser.getPassword().isEmpty() ||
+                preRegisterUser.getRole() == null) {
+            throw new BadRequestException("Dados ausentes ou incorretos");
+        }
+    }
+
 
     private String maskPassword(String password) {
         return password.substring(0, 4) + "*".repeat(password.length() - 4);
