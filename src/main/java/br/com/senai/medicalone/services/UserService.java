@@ -68,10 +68,10 @@ public class UserService {
             @ApiResponse(responseCode = "409", description = "Email já cadastrado")
     })
     public PreRegisterUser preRegisterUser(PreRegisterUser preRegisterUser) {
-        validatePreRegisterUserFields(preRegisterUser);
         if (preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
         }
+        validatePreRegisterUserFields(preRegisterUser);
         if (preRegisterUser.getRole() != RoleType.ADMIN && preRegisterUser.getRole() != RoleType.MEDICO) {
             throw new BadRequestException("Role inválida. Somente ADMIN ou MEDICO são permitidos.");
         }
@@ -101,6 +101,9 @@ public class UserService {
 
 
     private String maskPassword(String password) {
+        if (password == null) {
+            return null;
+        }
         return password.substring(0, 4) + "*".repeat(password.length() - 4);
     }
 

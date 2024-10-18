@@ -10,9 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 
@@ -52,6 +53,7 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testCreateUser_Success() throws Exception {
         String userJson = "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"123.456.789-00\",\"password\":\"password123\",\"role\":\"ADMIN\"}";
 
@@ -59,75 +61,134 @@ public class UserControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("john.doe@example.com"));
+                .andExpect(jsonPath("$.user.email").value("john.doe@example.com"));
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testUpdateUser_Success() throws Exception {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("password");
-        user.setRole(RoleType.ADMIN);
-        userRepository.save(user);
-
-        String updatedUserJson = "{\"email\":\"updated@example.com\",\"name\":\"Updated Name\",\"role\":\"ADMIN\"}";
-
-        mockMvc.perform(put("/api/usuarios/" + user.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(updatedUserJson))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("updated@example.com"))
-                .andExpect(jsonPath("$.name").value("Updated Name"));
-    }
-
-    @Test
-    public void testDeleteUser_Success() throws Exception {
         User user = new User();
         user.setEmail("test@example.com");
         user.setPassword("password");
         user.setRole(RoleType.ADMIN);
         user.setBirthDate(LocalDate.of(1990, 1, 1));
         user.setCpf("123.456.789-00");
+        user.setName("Test User");
+        user.setPhone("1234567890");
         userRepository.save(user);
 
-        mockMvc.perform(delete("/api/usuarios/" + user.getId()))
-                .andExpect(status().isNoContent());
+        String updatedUserJson = "{\"name\":\"John Doe Updated\",\"email\":\"updateduser@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"123.456.789-00\",\"password\":\"newpassword123\",\"role\":\"ADMIN\"}";
+
+        mockMvc.perform(put("/api/usuarios/" + user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedUserJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("updateduser@example.com"))
+                .andExpect(jsonPath("$.name").value("John Doe Updated"));
     }
 
     @Test
-    public void testGetUserById_Success() throws Exception {
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteUser_Success() throws Exception {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
         User user = new User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
+        user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
+        user.setBirthDate(LocalDate.of(1990, 1, 1));
+        user.setCpf("123.456.789-00");
+        user.setName("Test User");
+        user.setPhone("1234567890");
         userRepository.save(user);
 
-        mockMvc.perform(get("/api/usuarios/" + user.getId()))
+        String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
+        String token = mockMvc.perform(post("/api/usuarios/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        mockMvc.perform(delete("/api/usuarios/" + user.getId())
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Usuário excluído com sucesso"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testGetUserById_Success() throws Exception {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setPassword(passwordEncoder.encode("password"));
+        user.setRole(RoleType.ADMIN);
+        user.setBirthDate(LocalDate.of(1990, 1, 1));
+        user.setCpf("123.456.789-00");
+        user.setName("Test User");
+        user.setPhone("1234567890");
+        userRepository.save(user);
+
+        String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
+        String token = mockMvc.perform(post("/api/usuarios/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        mockMvc.perform(get("/api/usuarios/" + user.getId())
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testGetAllUsers_Success() throws Exception {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         User user = new User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
+        user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
+        user.setBirthDate(LocalDate.of(1990, 1, 1));
+        user.setCpf("123.456.789-00");
+        user.setName("Test User");
+        user.setPhone("1234567890");
         userRepository.save(user);
+
+        String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
+        String token = mockMvc.perform(post("/api/usuarios/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
         mockMvc.perform(get("/api/usuarios")
                         .param("page", "0")
-                        .param("size", "10"))
+                        .param("size", "10")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].email").value("test@example.com"));
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testLoginUser_Success() throws Exception {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         User user = new User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
+        user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
+        user.setBirthDate(LocalDate.of(1990, 1, 1));
+        user.setCpf("123.456.789-00");
+        user.setName("Test User");
+        user.setPhone("1234567890");
         userRepository.save(user);
 
         String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
@@ -140,18 +201,35 @@ public class UserControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testResetPassword_Success() throws Exception {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
         User user = new User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
+        user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
+        user.setBirthDate(LocalDate.of(1990, 1, 1));
+        user.setCpf("123.456.789-00");
+        user.setName("Test User");
+        user.setPhone("1234567890");
         userRepository.save(user);
+
+        String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
+        String token = mockMvc.perform(post("/api/usuarios/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
         String resetPasswordJson = "{\"newPassword\":\"newpassword\"}";
 
         mockMvc.perform(put("/api/usuarios/email/test@example.com/redefinir-senha")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(resetPasswordJson))
+                        .content(resetPasswordJson)
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Senha redefinida com sucesso"));
     }
