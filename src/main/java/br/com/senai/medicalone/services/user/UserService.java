@@ -1,9 +1,12 @@
 package br.com.senai.medicalone.services.user;
 
+import br.com.senai.medicalone.dtos.user.UserRequestDTO;
+import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.*;
+import br.com.senai.medicalone.mappers.user.UserMapper;
 import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
@@ -31,15 +34,18 @@ public class UserService {
     private final PreRegisterUserRepository preRegisterUserRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final UserMapper userMapper;
 
     @Autowired
     public UserService(UserRepository userRepository, PreRegisterUserRepository preRegisterUserRepository,
-                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil,
+                       UserMapper userMapper) {
         this.userRepository = userRepository;
         this.preRegisterUserRepository = preRegisterUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.userMapper = userMapper;
     }
 
     @Operation(summary = "Create a new user", description = "Método para criar um novo usuário")
@@ -47,7 +53,8 @@ public class UserService {
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
             @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
     })
-    public User createUser(User user) {
+    public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
+        User user = userMapper.toEntity(userRequestDTO);
         validateUserFields(user);
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
@@ -58,7 +65,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User createdUser = userRepository.save(user);
         createdUser.setPassword(maskPassword(createdUser.getPassword()));
-        return createdUser;
+        return userMapper.toResponseDTO(createdUser);
     }
 
     @Operation(summary = "Pre-register a user", description = "Método para pré-registrar um usuário")
@@ -113,7 +120,8 @@ public class UserService {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
             @ApiResponse(responseCode = "409", description = "Não é possível atualizar usuários com perfil PACIENTE")
     })
-    public User updateUser(Long id, User updatedUser) {
+    public UserResponseDTO updateUser(Long id, UserRequestDTO updatedUserDTO) {
+        User updatedUser = userMapper.toEntity(updatedUserDTO);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
         if (user.getRole().equals(RoleType.PACIENTE)) {
@@ -121,7 +129,8 @@ public class UserService {
         }
         user.setEmail(updatedUser.getEmail());
         user.setName(updatedUser.getName());
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return userMapper.toResponseDTO(savedUser);
     }
 
     @Operation(summary = "Delete a user", description = "Método para excluir um usuário")
