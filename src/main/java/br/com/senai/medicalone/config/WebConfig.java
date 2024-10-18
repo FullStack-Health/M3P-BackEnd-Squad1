@@ -1,5 +1,5 @@
 
-package br.com.senai.medicalone.config.security;
+package br.com.senai.medicalone.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

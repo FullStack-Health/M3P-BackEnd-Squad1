@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,6 +43,7 @@ public class User implements UserDetails {
 
     @NotNull
     @Past
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(nullable = false)
     @Schema(description = "Data de nascimento do usuário", example = "1990-01-01")
     private LocalDate birthDate;
@@ -69,6 +71,17 @@ public class User implements UserDetails {
     @Column(nullable = false)
     @Schema(description = "Role do usuário", example = "ADMIN")
     private RoleType role;
+
+    @PrePersist
+    @PreUpdate
+    private void preProcess() {
+        this.cpf = cleanString(this.cpf);
+        this.phone = cleanString(this.phone);
+    }
+
+    private String cleanString(String value) {
+        return value != null ? value.replaceAll("\\D", "") : null;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
