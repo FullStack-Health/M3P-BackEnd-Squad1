@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @Schema(description = "DTO para requisição de criação/atualização de paciente")
-public class PatientResquestDTO {
+public class PatientRequestDTO {
     @Schema(description = "Nome completo do paciente", example = "John Doe")
     private String fullName;
 
@@ -22,8 +22,11 @@ public class PatientResquestDTO {
     @Schema(description = "CPF do paciente", example = "123.456.789-00")
     private String cpf;
 
-    @Schema(description = "RG do paciente com órgão expedidor", example = "1234567890 SSP")
+    @Schema(description = "RG do paciente", example = "1234567890")
     private String rg;
+
+    @Schema(description = "Órgão expedidor do RG", example = "SSP")
+    private String rgIssuer;
 
     @Schema(description = "Estado civil do paciente", example = "Solteiro")
     private String maritalStatus;
