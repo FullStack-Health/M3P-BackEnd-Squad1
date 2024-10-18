@@ -8,11 +8,13 @@ import br.com.senai.medicalone.entities.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
 import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
+import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
 import br.com.senai.medicalone.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,9 +44,13 @@ public class UserController {
             PreRegisterUser createdUser = userService.preRegisterUser(preRegisterUser);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (DataConflictException e) {
-            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(Map.of("message"
+
+, e.getMessage()), HttpStatus.CONFLICT);
         } catch (BadRequestException e) {
-            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message"
+
+, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -52,18 +58,22 @@ public class UserController {
     @Operation(summary = "Create a new user", description = "Endpoint para criar um novo usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Role inválida ou dados ausentes"),
-            @ApiResponse(responseCode = "409", description = "Email já cadastrado")
+            @ApiResponse(responseCode = "400", description = "Role inválida, CPF ausente ou dados ausentes"),
+            @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
     })
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
         if (user.getRole().equals(RoleType.PACIENTE)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Map.of("message"
+
+, "Role inválida ou dados ausentes"), HttpStatus.BAD_REQUEST);
         }
         try {
             User createdUser = userService.createUser(user);
-            return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+            return new ResponseEntity<>(Map.of("message", "Usuário criado com sucesso", "user", createdUser), HttpStatus.CREATED);
         } catch (DataConflictException e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(Map.of("message"
+
+, e.getMessage()), HttpStatus.CONFLICT);
         }
     }
 
@@ -85,12 +95,23 @@ public class UserController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user", description = "Endpoint para excluir um usuário")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Usuário excluído com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+            @ApiResponse(responseCode = "200", description = "Usuário excluído com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+            @ApiResponse(responseCode = "409", description = "Não é possível excluir usuários com perfil PACIENTE")
     })
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return new ResponseEntity<>(Map.of("message", "Usuário excluído com sucesso"), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity<>(Map.of("message"
+
+, e.getMessage()), HttpStatus.NOT_FOUND);
+        } catch (DataConflictException e) {
+            return new ResponseEntity<>(Map.of("message"
+
+, e.getMessage()), HttpStatus.CONFLICT);
+        }
     }
 
     @GetMapping("/{id}")

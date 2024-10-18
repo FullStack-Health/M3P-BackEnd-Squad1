@@ -1,14 +1,15 @@
 package br.com.senai.medicalone.entities;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,30 +27,44 @@ public class User implements UserDetails {
     @Schema(description = "ID do usuário", example = "1")
     private Long id;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false, length = 255)
     @Schema(description = "Nome do usuário", example = "John Doe")
     private String name;
 
+    @NotBlank
+    @Email
+    @Size(max = 255)
     @Column(nullable = false, unique = true, length = 255)
     @Schema(description = "Email do usuário", example = "user@example.com")
     private String email;
 
+    @NotNull
+    @Past
     @Column(nullable = false)
     @Schema(description = "Data de nascimento do usuário", example = "1990-01-01")
     private LocalDate birthDate;
 
+    @NotBlank
+    @Size(max = 20)
     @Column(nullable = false, length = 20)
     @Schema(description = "Telefone do usuário", example = "1234567890")
     private String phone;
 
+    @NotBlank
+    @Size(max = 14)
     @Column(nullable = false, unique = true, length = 14)
     @Schema(description = "CPF do usuário", example = "123.456.789-00")
     private String cpf;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false, length = 255)
     @Schema(description = "Senha do usuário", example = "password123")
     private String password;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Schema(description = "Role do usuário", example = "ADMIN")

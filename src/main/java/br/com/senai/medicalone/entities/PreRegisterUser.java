@@ -1,5 +1,7 @@
 package br.com.senai.medicalone.entities;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -8,7 +10,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import jakarta.persistence.*;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -25,14 +26,20 @@ public class PreRegisterUser implements UserDetails {
     @Schema(description = "ID do usuário", example = "1")
     private Long id;
 
+    @NotBlank
+    @Email
+    @Size(max = 255)
     @Column(nullable = false, unique = true, length = 255)
     @Schema(description = "Email do usuário", example = "user@example.com")
     private String email;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false, length = 255)
     @Schema(description = "Senha do usuário", example = "password123")
     private String password;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Schema(description = "Role do usuário", example = "ADMIN")
