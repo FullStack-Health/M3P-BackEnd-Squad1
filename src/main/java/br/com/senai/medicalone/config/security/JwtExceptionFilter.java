@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.config;
+package br.com.senai.medicalone.config.security;
 
 import br.com.senai.medicalone.exceptions.customexceptions.JwtTokenExpiredException;
 import org.springframework.stereotype.Component;

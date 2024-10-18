@@ -1,6 +1,6 @@
-package br.com.senai.medicalone.repositories;
+package br.com.senai.medicalone.repositories.user;
 
-import br.com.senai.medicalone.entities.User;
+import br.com.senai.medicalone.entities.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

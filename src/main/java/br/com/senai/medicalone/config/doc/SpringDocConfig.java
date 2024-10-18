@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.config;
+package br.com.senai.medicalone.config.doc;
 
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;

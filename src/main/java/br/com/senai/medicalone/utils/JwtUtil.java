@@ -1,6 +1,6 @@
 package br.com.senai.medicalone.utils;
 
-import br.com.senai.medicalone.entities.User;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.JwtTokenExpiredException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;

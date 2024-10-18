@@ -1,6 +1,6 @@
-package br.com.senai.medicalone.dtos.users;
+package br.com.senai.medicalone.dtos.user;
 
-import br.com.senai.medicalone.entities.RoleType;
+import br.com.senai.medicalone.entities.user.RoleType;
 import lombok.Data;
 import java.time.LocalDate;
 
