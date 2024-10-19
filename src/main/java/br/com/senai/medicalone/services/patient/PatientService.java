@@ -3,11 +3,14 @@ package br.com.senai.medicalone.services.patient;
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
 import br.com.senai.medicalone.entities.patient.Patient;
+import br.com.senai.medicalone.entities.user.RoleType;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
+import br.com.senai.medicalone.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,6 +36,9 @@ public class PatientService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserService userService;
+
     @Operation(summary = "Create a new patient", description = "Método para criar um novo paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso"),
@@ -48,8 +54,19 @@ public class PatientService {
 
         try {
             Patient patient = patientMapper.toEntity(patientRequestDTO);
-            patient.setPassword(passwordEncoder.encode(patient.getCpf()));
+            patient.setPassword(patient.getCpf());
             patient = patientRepository.save(patient);
+
+            User user = new User();
+            user.setName(patient.getFullName());
+            user.setEmail(patient.getEmail());
+            user.setBirthDate(patient.getBirthDate());
+            user.setPhone(patient.getPhone());
+            user.setCpf(patient.getCpf());
+            user.setPassword(patient.getCpf());
+            user.setRole(RoleType.PACIENTE);
+            userService.createUser(user);
+
             return patientMapper.toResponseDTO(patient);
         } catch (DataIntegrityViolationException ex) {
             throw new PatientAlreadyExistsException("Paciente já cadastrado ");
