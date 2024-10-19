@@ -2,11 +2,15 @@ package br.com.senai.medicalone.entities.patient;
 
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.NoArgsConstructor;
 
 @Embeddable
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "Endereço do paciente")
 public class Address {
 
