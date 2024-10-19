@@ -4,6 +4,8 @@ import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,13 +105,19 @@ public class UserControllerIntegrationTest {
         userRepository.save(user);
 
         String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
-        String token = mockMvc.perform(post("/api/usuarios/login")
+
+        String responseContent = mockMvc.perform(post("/api/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseContent);
+        String token = jsonNode.get("token").asText();
 
         mockMvc.perform(delete("/api/usuarios/" + user.getId())
                         .header("Authorization", "Bearer " + token))
@@ -121,6 +129,7 @@ public class UserControllerIntegrationTest {
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testGetUserById_Success() throws Exception {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
         User user = new User();
         user.setEmail("test@example.com");
         user.setPassword(passwordEncoder.encode("password"));
@@ -132,13 +141,18 @@ public class UserControllerIntegrationTest {
         userRepository.save(user);
 
         String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
-        String token = mockMvc.perform(post("/api/usuarios/login")
+
+        String responseContent = mockMvc.perform(post("/api/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseContent);
+        String token = jsonNode.get("token").asText();
 
         mockMvc.perform(get("/api/usuarios/" + user.getId())
                         .header("Authorization", "Bearer " + token))
@@ -150,6 +164,7 @@ public class UserControllerIntegrationTest {
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testGetAllUsers_Success() throws Exception {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
         User user = new User();
         user.setEmail("test@example.com");
         user.setPassword(passwordEncoder.encode("password"));
@@ -161,13 +176,18 @@ public class UserControllerIntegrationTest {
         userRepository.save(user);
 
         String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
-        String token = mockMvc.perform(post("/api/usuarios/login")
+
+        String responseContent = mockMvc.perform(post("/api/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseContent);
+        String token = jsonNode.get("token").asText();
 
         mockMvc.perform(get("/api/usuarios")
                         .param("page", "0")
@@ -176,6 +196,7 @@ public class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].email").value("test@example.com"));
     }
+
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -216,13 +237,17 @@ public class UserControllerIntegrationTest {
         userRepository.save(user);
 
         String loginJson = "{\"email\":\"test@example.com\",\"password\":\"password\"}";
-        String token = mockMvc.perform(post("/api/usuarios/login")
+        String responseContent = mockMvc.perform(post("/api/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseContent);
+        String token = jsonNode.get("token").asText();
 
         String resetPasswordJson = "{\"newPassword\":\"newpassword\"}";
 
@@ -231,6 +256,7 @@ public class UserControllerIntegrationTest {
                         .content(resetPasswordJson)
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Senha redefinida com sucesso"));
+                .andExpect(jsonPath("$.message").value("Senha redefinida com sucesso"));
     }
+
 }
