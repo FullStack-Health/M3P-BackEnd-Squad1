@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -144,12 +145,14 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
             @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
     })
-    public ResponseEntity<String> loginUser(@RequestBody UserRequestDTO userRequestDTO) {
+    public ResponseEntity<Map<String, String>> loginUser(@RequestBody UserRequestDTO userRequestDTO) {
         try {
             String jwt = userService.loginUser(userRequestDTO.getEmail(), userRequestDTO.getPassword());
-            return new ResponseEntity<>(jwt, HttpStatus.OK);
+            Map<String, String> response = new HashMap<>();
+            response.put("token", jwt);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (UnauthorizedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -159,11 +162,13 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Senha redefinida com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos")
     })
-    public ResponseEntity<String> resetPassword(@PathVariable String email, @RequestBody ResetPasswordRequestDTO request) {
+    public ResponseEntity<Map<String, String>> resetPassword(@PathVariable String email, @RequestBody ResetPasswordRequestDTO request) {
         if (request.getNewPassword() == null || request.getNewPassword().isEmpty()) {
             throw new BadRequestException("Dados ausentes ou incorretos");
         }
         userService.resetPassword(email, request.getNewPassword());
-        return new ResponseEntity<>("Senha redefinida com sucesso", HttpStatus.OK);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Senha redefinida com sucesso");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

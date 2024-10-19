@@ -10,17 +10,6 @@ import java.util.List;
 
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, Long> {
-
-    List<Patient> findByFullName(String fullName);
-
-
-    List<Patient> findByGender(String gender);
-
-    Patient findByCpf(String cpf);
-
-    @Query("SELECT p FROM Patient p WHERE p.maritalStatus = :maritalStatus")
-    List<Patient> findByMaritalStatus(@Param("maritalStatus") String maritalStatus);
-
-    @Query("SELECT p FROM Patient p WHERE p.placeOfBirth = :placeOfBirth")
-    List<Patient> findByPlaceOfBirth(@Param("placeOfBirth") String placeOfBirth);
+    boolean existsByEmail(String email);
+    boolean existsByCpf(String cpf);
 }

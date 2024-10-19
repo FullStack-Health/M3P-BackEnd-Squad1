@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -113,8 +112,14 @@ public class Patient {
     @Schema(description = "Endereço do paciente")
     private Address address;
 
+    @NotBlank
+    @Column(nullable = false)
+    @Schema(description = "Senha do paciente")
+    private String password;
+
     @PrePersist
     @PreUpdate
+    @Schema(description = "Método chamado antes de persistir ou atualizar a entidade")
     private void preProcess() {
         this.cpf = cleanString(this.cpf);
         this.phone = cleanString(this.phone);
@@ -126,6 +131,7 @@ public class Patient {
         }
     }
 
+    @Schema(description = "Método para limpar uma string, removendo todos os caracteres não numéricos")
     private String cleanString(String value) {
         return value != null ? value.replaceAll("\\D", "") : null;
     }
