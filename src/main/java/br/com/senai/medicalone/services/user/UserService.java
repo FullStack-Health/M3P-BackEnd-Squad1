@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,8 +24,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -60,9 +63,7 @@ public class UserService {
             throw new DataConflictException("CPF já cadastrado.");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User createdUser = userRepository.save(user);
-        createdUser.setPassword(maskPassword(createdUser.getPassword()));
-        return createdUser;
+        return userRepository.save(user);
     }
 
     @Operation(summary = "Pre-register a user", description = "Método para pré-registrar um usuário")
@@ -148,12 +149,15 @@ public class UserService {
             @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso")
     })
     public Page<User> findAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable).map(user -> {
-            if (!user.getRole().equals(RoleType.PACIENTE)) {
-                user.setPassword(maskPassword(user.getPassword()));
-            }
-            return user;
-        });
+        Page<User> usersPage = userRepository.findAll(pageable);
+        List<User> filteredUsers = usersPage.stream()
+                .filter(user -> !user.getRole().equals(RoleType.PACIENTE))
+                .map(user -> {
+                    user.setPassword(maskPassword(user.getPassword()));
+                    return user;
+                })
+                .collect(Collectors.toList());
+        return new PageImpl<>(filteredUsers, pageable, usersPage.getTotalElements());
     }
 
     @Operation(summary = "Get user by ID", description = "Método para obter um usuário pelo ID")
