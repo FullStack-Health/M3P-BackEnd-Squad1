@@ -13,4 +13,12 @@ public class SpringDocConfig {
                 .pathsToMatch("/api/usuarios/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi pacientesApi() {
+        return GroupedOpenApi.builder()
+                .group("pacientes")
+                .pathsToMatch("/api/pacientes/**")
+                .build();
+    }
 }
