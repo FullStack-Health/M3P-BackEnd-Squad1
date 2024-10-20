@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.controllers;
+package br.com.senai.medicalone.controllers.user;
 
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;

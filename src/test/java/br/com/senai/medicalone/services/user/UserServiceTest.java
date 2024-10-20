@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.services;
+package br.com.senai.medicalone.services.user;
 import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
@@ -7,8 +7,6 @@ import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException
 import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
 import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
-import br.com.senai.medicalone.services.user.UserDetailsServiceImpl;
-import br.com.senai.medicalone.services.user.UserService;
 import br.com.senai.medicalone.utils.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
