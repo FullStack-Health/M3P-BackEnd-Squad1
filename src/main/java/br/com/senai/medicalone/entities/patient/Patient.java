@@ -132,7 +132,7 @@ public class Patient {
     }
 
     @Schema(description = "Método para limpar uma string, removendo todos os caracteres não numéricos")
-    private String cleanString(String value) {
+    public String cleanString(String value) {
         return value != null ? value.replaceAll("\\D", "") : null;
     }
 }

@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.services;
+package br.com.senai.medicalone.services.patient;
 
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
@@ -11,7 +11,6 @@ import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundExcept
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import br.com.senai.medicalone.services.user.UserService;
-import br.com.senai.medicalone.services.patient.PatientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

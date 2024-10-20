@@ -79,7 +79,7 @@ public class User implements UserDetails {
         this.phone = cleanString(this.phone);
     }
 
-    private String cleanString(String value) {
+    public String cleanString(String value) {
         return value != null ? value.replaceAll("\\D", "") : null;
     }
 

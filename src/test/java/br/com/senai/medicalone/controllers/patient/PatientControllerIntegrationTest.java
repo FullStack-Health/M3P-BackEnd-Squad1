@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.controllers;
+package br.com.senai.medicalone.controllers.patient;
 
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
