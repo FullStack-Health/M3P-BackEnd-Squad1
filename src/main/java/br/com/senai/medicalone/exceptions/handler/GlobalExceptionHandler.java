@@ -59,4 +59,11 @@ public class GlobalExceptionHandler {
         responseBody.put("message", ex.getMessage());
         return new ResponseEntity<>(responseBody, HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(ExamNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleExamNotFoundException(ExamNotFoundException ex) {
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", ex.getMessage());
+        return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+    }
 }
