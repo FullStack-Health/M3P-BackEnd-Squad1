@@ -1,28 +1,15 @@
-package br.com.senai.medicalone.entities.exam;
+package br.com.senai.medicalone.dtos.exam;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import io.swagger.v3.oas.annotations.media.Schema;
-import br.com.senai.medicalone.entities.patient.Patient;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Entity
-@Table(name = "tb_exams")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Schema(description = "Entidade que representa um exame")
-public class Exam {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "ID do exame", example = "1")
-    private Long id;
+@Schema(description = "DTO para criação e atualização de exames")
+public class ExamRequestDTO {
 
     @NotBlank
     @Size(min = 8, max = 64)
@@ -54,9 +41,7 @@ public class Exam {
     @Schema(description = "Resultados do exame", example = "Resultados detalhados do exame")
     private String results;
 
-    @NotNull(message = "Paciente é obrigatório")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id", nullable = false)
-    @Schema(description = "Paciente associado ao exame")
-    private Patient patient;
+    @NotNull
+    @Schema(description = "ID do paciente associado ao exame", example = "1")
+    private Long patientId;
 }
