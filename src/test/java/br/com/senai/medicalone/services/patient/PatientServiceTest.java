@@ -277,5 +277,75 @@ class PatientServiceTest {
         assertThrows(BadRequestException.class, () -> patientService.createPatient(requestDTO));
     }
 
+    @Test
+    void getPatientByCpf_Success() {
+        String cpf = "123.456.789-00";
+        Patient patient = new Patient();
+        patient.setCpf(cpf);
+        patient.setFullName("John Doe");
 
+        when(patientRepository.findByCpf(cpf)).thenReturn(patient);
+        when(patientMapper.toResponseDTO(any(Patient.class))).thenReturn(new PatientResponseDTO());
+
+        PatientResponseDTO responseDTO = patientService.getPatientByCpf(cpf);
+
+        assertNotNull(responseDTO);
+    }
+
+    @Test
+    void getPatientByCpf_NotFound() {
+        String cpf = "123.456.789-00";
+
+        when(patientRepository.findByCpf(cpf)).thenReturn(null);
+
+        assertThrows(PatientNotFoundException.class, () -> patientService.getPatientByCpf(cpf));
+    }
+
+    @Test
+    void getPatientsByName_Success() {
+        String name = "John Doe";
+        Patient patient = new Patient();
+        patient.setFullName(name);
+
+        when(patientRepository.findByName(name)).thenReturn(List.of(patient));
+        when(patientMapper.toResponseDTO(any(Patient.class))).thenReturn(new PatientResponseDTO());
+
+        List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(name);
+
+        assertNotNull(responseDTOs);
+        assertFalse(responseDTOs.isEmpty());
+    }
+
+    @Test
+    void getPatientsByName_NotFound() {
+        String name = "John Doe";
+
+        when(patientRepository.findByName(name)).thenReturn(List.of());
+
+        assertThrows(PatientNotFoundException.class, () -> patientService.getPatientsByName(name));
+    }
+
+    @Test
+    void getPatientsByPhone_Success() {
+        String phone = "99999999999";
+        Patient patient = new Patient();
+        patient.setPhone(phone);
+
+        when(patientRepository.findByPhone(phone)).thenReturn(List.of(patient));
+        when(patientMapper.toResponseDTO(any(Patient.class))).thenReturn(new PatientResponseDTO());
+
+        List<PatientResponseDTO> responseDTOs = patientService.getPatientsByPhone(phone);
+
+        assertNotNull(responseDTOs);
+        assertFalse(responseDTOs.isEmpty());
+    }
+
+    @Test
+    void getPatientsByPhone_NotFound() {
+        String phone = "99999999999";
+
+        when(patientRepository.findByPhone(phone)).thenReturn(List.of());
+
+        assertThrows(PatientNotFoundException.class, () -> patientService.getPatientsByPhone(phone));
+    }
 }
