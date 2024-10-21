@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -179,5 +181,36 @@ public class PatientControllerIntegrationTest {
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].fullName").value("John Doe"));
+    }
+
+    @Test
+    public void testGetPatientByCpf_Success() throws Exception {
+        PatientResponseDTO savedPatient = patientService.createPatient(patientRequestDTO);
+
+        mockMvc.perform(get("/api/pacientes/cpf/{cpf}", savedPatient.getCpf())
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cpf").value(savedPatient.getCpf()));
+    }
+
+    @Test
+    public void testGetPatientsByName_Success() throws Exception {
+        patientService.createPatient(patientRequestDTO);
+
+        mockMvc.perform(get("/api/pacientes/nome/{name}", patientRequestDTO.getFullName())
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].fullName").value(patientRequestDTO.getFullName()));
+    }
+
+    @Test
+    public void testGetPatientsByPhone_Success() throws Exception {
+        PatientResponseDTO savedPatient = patientService.createPatient(patientRequestDTO);
+        assertNotNull(savedPatient);
+        assertEquals(patientRequestDTO.getPhone().replaceAll("[^0-9]", ""), savedPatient.getPhone());
+        mockMvc.perform(get("/api/pacientes/telefone/{phone}", patientRequestDTO.getPhone().replaceAll("[^0-9]", ""))
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].phone").value(patientRequestDTO.getPhone().replaceAll("[^0-9]", "")));
     }
 }

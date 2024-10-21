@@ -1,7 +1,9 @@
 package br.com.senai.medicalone.entities.patient;
 
+import br.com.senai.medicalone.entities.exam.Exam;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -9,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,6 +19,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Schema(description = "Entidade que representa um paciente")
 public class Patient {
 
@@ -116,6 +120,10 @@ public class Patient {
     @Column(nullable = false)
     @Schema(description = "Senha do paciente")
     private String password;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "Lista de exames do paciente")
+    private List<Exam> exams = new ArrayList<>();
 
     @PrePersist
     @PreUpdate

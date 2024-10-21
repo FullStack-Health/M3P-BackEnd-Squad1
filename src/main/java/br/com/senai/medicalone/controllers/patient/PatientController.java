@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -87,6 +88,39 @@ public class PatientController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PatientResponseDTO> responseDTOs = patientService.getAllPatients(pageable);
+        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
+    }
+
+    @GetMapping("/cpf/{cpf}")
+    @Operation(summary = "Get patient by CPF", description = "Endpoint para obter um paciente pelo CPF")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+    })
+    public ResponseEntity<PatientResponseDTO> getPatientByCpf(@PathVariable String cpf) {
+        PatientResponseDTO responseDTO = patientService.getPatientByCpf(cpf);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/nome/{name}")
+    @Operation(summary = "Get patients by name", description = "Endpoint para obter pacientes pelo nome")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
+    })
+    public ResponseEntity<List<PatientResponseDTO>> getPatientsByName(@PathVariable String name) {
+        List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(name);
+        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
+    }
+
+    @GetMapping("/telefone/{phone}")
+    @Operation(summary = "Get patients by phone", description = "Endpoint para obter pacientes pelo telefone")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
+    })
+    public ResponseEntity<List<PatientResponseDTO>> getPatientsByPhone(@PathVariable String phone) {
+        List<PatientResponseDTO> responseDTOs = patientService.getPatientsByPhone(phone);
         return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
     }
 }

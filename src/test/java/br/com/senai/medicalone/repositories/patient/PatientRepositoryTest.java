@@ -27,7 +27,27 @@ public class PatientRepositoryTest {
         patientRepository.deleteAll();
 
         Address address = new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado");
-        patient = new Patient(null, "John Doe", "Masculino", LocalDate.of(1990, 1, 1), "123.456.789-00", "1234567890", "SSP", "Solteiro", "99999999999", "user@example.com", "São Paulo", "99999999999", List.of("Pólen"), List.of("Cuidados Especiais"), "Unimed", "1234567890", LocalDate.of(2025, 12, 31), address, "password");
+        patient = Patient.builder()
+                .id(null)
+                .fullName("John Doe")
+                .gender("Masculino")
+                .birthDate(LocalDate.of(1990, 1, 1))
+                .cpf("123.456.789-00")
+                .rg("1234567890")
+                .rgIssuer("SSP")
+                .maritalStatus("Solteiro")
+                .phone("99999999999")
+                .email("user@example.com")
+                .placeOfBirth("São Paulo")
+                .emergencyContact("99999999999")
+                .allergies(List.of("Pólen"))
+                .specificCare(List.of("Cuidados Especiais"))
+                .healthInsurance("Unimed")
+                .healthInsuranceNumber("1234567890")
+                .healthInsuranceValidity(LocalDate.of(2025, 12, 31))
+                .address(address)
+                .password("password")
+                .build();
     }
 
     @Test
@@ -59,11 +79,28 @@ public class PatientRepositoryTest {
         boolean exists = patientRepository.existsByCpf("12345678900");
         assertThat(exists).isTrue();
     }
+
     @Test
     public void testDeletePatient() {
         Patient savedPatient = patientRepository.save(patient);
         patientRepository.deleteById(savedPatient.getId());
         boolean exists = patientRepository.existsById(savedPatient.getId());
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    public void testFindByName() {
+        patientRepository.save(patient);
+        List<Patient> patients = patientRepository.findByName("John Doe");
+        assertThat(patients).isNotEmpty();
+        assertThat(patients.get(0).getFullName()).isEqualTo("John Doe");
+    }
+
+    @Test
+    public void testFindByPhone() {
+        patientRepository.save(patient);
+        List<Patient> patients = patientRepository.findByPhone("99999999999");
+        assertThat(patients).isNotEmpty();
+        assertThat(patients.get(0).getPhone()).isEqualTo("99999999999");
     }
 }
