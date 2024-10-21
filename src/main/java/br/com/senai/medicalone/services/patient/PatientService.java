@@ -22,7 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PatientService {
@@ -186,4 +188,48 @@ public class PatientService {
             throw new BadRequestException("dados ausentes: address.neighborhood");
         }
     }
+
+    @Operation(summary = "Get patient by CPF", description = "Método para obter um paciente pelo CPF")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+    })
+    public PatientResponseDTO getPatientByCpf(String cpf) {
+        Patient patient = patientRepository.findByCpf(cpf);
+        if (patient != null) {
+            return patientMapper.toResponseDTO(patient);
+        } else {
+            throw new PatientNotFoundException("Paciente não encontrado com CPF: " + cpf);
+        }
+    }
+
+    @Operation(summary = "Get patients by name", description = "Método para obter pacientes pelo nome")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
+    })
+    public List<PatientResponseDTO> getPatientsByName(String name) {
+        List<Patient> patients = patientRepository.findByName(name);
+        if (!patients.isEmpty()) {
+            return patients.stream().map(patientMapper::toResponseDTO).collect(Collectors.toList());
+        } else {
+            throw new PatientNotFoundException("Pacientes não encontrados com o nome: " + name);
+        }
+    }
+
+    @Operation(summary = "Get patients by phone", description = "Método para obter pacientes pelo telefone")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
+    })
+    public List<PatientResponseDTO> getPatientsByPhone(String phone) {
+        List<Patient> patients = patientRepository.findByPhone(phone);
+        if (!patients.isEmpty()) {
+            return patients.stream().map(patientMapper::toResponseDTO).collect(Collectors.toList());
+        } else {
+            throw new PatientNotFoundException("Pacientes não encontrados com o telefone: " + phone);
+        }
+    }
+
+
 }
