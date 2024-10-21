@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -122,7 +123,7 @@ public class Patient {
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "Lista de exames do paciente")
-    private List<Exam> exams;
+    private List<Exam> exams = new ArrayList<>();
 
     @PrePersist
     @PreUpdate

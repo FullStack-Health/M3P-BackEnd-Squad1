@@ -54,6 +54,7 @@ public class Exam {
     @Schema(description = "Resultados do exame", example = "Resultados detalhados do exame")
     private String results;
 
+    @NotNull(message = "Paciente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     @Schema(description = "Paciente associado ao exame")
