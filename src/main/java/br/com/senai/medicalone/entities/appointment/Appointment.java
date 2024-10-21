@@ -1,5 +1,6 @@
 package br.com.senai.medicalone.entities.appointment;
 
+import br.com.senai.medicalone.entities.patient.Patient;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -47,7 +48,8 @@ public class Appointment {
     private String observations;
 
     @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     @Schema(description = "ID do paciente associado a consulta")
-    private Long patientId;
+    private Patient patient;
 }
