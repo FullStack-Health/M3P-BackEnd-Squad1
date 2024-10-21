@@ -3,9 +3,12 @@ package br.com.senai.medicalone.services.exam;
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
 import br.com.senai.medicalone.entities.exam.Exam;
+import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.exceptions.customexceptions.ExamNotFoundException;
+import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.exam.ExamMapper;
 import br.com.senai.medicalone.repositories.exam.ExamRepository;
+import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +25,17 @@ public class ExamService {
     @Autowired
     private ExamMapper examMapper;
 
+    @Autowired
+    private PatientRepository patientRepository;
+
     @Transactional
     public ExamResponseDTO createExam(ExamRequestDTO dto) {
+        Optional<Patient> patientOptional = patientRepository.findById(dto.getPatientId());
+        if (patientOptional.isEmpty()) {
+            throw new PatientNotFoundException("Paciente não encontrado");
+        }
         Exam exam = examMapper.toEntity(dto);
+        exam.setPatient(patientOptional.get());
         exam = examRepository.save(exam);
         return examMapper.toResponseDTO(exam);
     }

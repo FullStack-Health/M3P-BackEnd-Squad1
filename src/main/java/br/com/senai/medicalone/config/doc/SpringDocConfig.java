@@ -23,10 +23,18 @@ public class SpringDocConfig {
     }
 
     @Bean
-    public GroupedOpenApi appointmentsApi() {
+    public GroupedOpenApi consultasApi() {
         return GroupedOpenApi.builder()
-                .group("appointments")
-                .pathsToMatch("/api/appointments/**")
+                .group("consultas")
+                .pathsToMatch("/api/consultas/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi examesApi() {
+        return GroupedOpenApi.builder()
+                .group("exames")
+                .pathsToMatch("/api/exames/**")
                 .build();
     }
 }

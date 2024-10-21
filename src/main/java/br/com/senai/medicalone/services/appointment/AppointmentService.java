@@ -20,7 +20,7 @@ public class AppointmentService {
     private AppointmentRepository appointmentRepository;
 
     @Autowired
-    private AppointmentMapper appointmentMapper; // Crie um mapper semelhante aos outros
+    private AppointmentMapper appointmentMapper;
 
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto) {

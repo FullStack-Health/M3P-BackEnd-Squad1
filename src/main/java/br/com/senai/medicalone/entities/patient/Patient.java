@@ -1,5 +1,6 @@
 package br.com.senai.medicalone.entities.patient;
 
+import br.com.senai.medicalone.entities.appointment.Appointment;
 import br.com.senai.medicalone.entities.exam.Exam;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -91,13 +92,13 @@ public class Patient {
     private String emergencyContact;
 
     @ElementCollection
-    @CollectionTable(name = "patient_allergies", joinColumns = @JoinColumn(name = "patient_id"))
+    @CollectionTable(name = "tb_patient_allergies", joinColumns = @JoinColumn(name = "patient_id"))
     @Column(name = "allergy")
     @Schema(description = "Lista de alergias do paciente")
     private List<String> allergies;
 
     @ElementCollection
-    @CollectionTable(name = "patient_specific_care", joinColumns = @JoinColumn(name = "patient_id"))
+    @CollectionTable(name = "tb_patient_specific_care", joinColumns = @JoinColumn(name = "patient_id"))
     @Column(name = "specific_care")
     @Schema(description = "Lista de cuidados específicos do paciente")
     private List<String> specificCare;
@@ -124,6 +125,10 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "Lista de exames do paciente")
     private List<Exam> exams = new ArrayList<>();
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "Lista de consultas do paciente")
+    private List<Appointment> appointments = new ArrayList<>();
 
     @PrePersist
     @PreUpdate
