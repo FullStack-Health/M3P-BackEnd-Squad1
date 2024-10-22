@@ -213,7 +213,7 @@ public class UserService {
                         "email", user.getEmail(),
                         "role", user.getRole().name()
                 );
-                return jwtUtil.generateToken(claims, user.getEmail()); // Método correto
+                return jwtUtil.generateToken(claims, email);
             }
 
             Optional<PreRegisterUser> preRegisterUserOptional = preRegisterUserRepository.findByEmail(email);
@@ -224,7 +224,7 @@ public class UserService {
                         "email", preRegisterUser.getEmail(),
                         "role", preRegisterUser.getRole().name()
                 );
-                return jwtUtil.generateToken(claims, preRegisterUser.getEmail()); // Método correto
+                return jwtUtil.generateToken(claims, email);
             }
 
             throw new UserNotFoundException("Usuário não encontrado");
