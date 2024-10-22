@@ -26,24 +26,29 @@ public class Exam {
 
     @NotBlank
     @Size(min = 8, max = 64)
+    @Column(nullable = false, length = 64)
     @Schema(description = "Nome do exame", example = "Hemograma Completo")
     private String name;
 
     @NotNull
+    @Column(nullable = false)
     @Schema(description = "Data do exame", example = "2023-10-01")
     private LocalDate examDate;
 
     @NotNull
+    @Column(nullable = false)
     @Schema(description = "Horário do exame", example = "08:30")
     private LocalTime examTime;
 
     @NotBlank
     @Size(min = 4, max = 32)
+    @Column(nullable = false, length = 32)
     @Schema(description = "Tipo do exame", example = "Sangue")
     private String type;
 
     @NotBlank
     @Size(min = 4, max = 32)
+    @Column(nullable = false, length = 32)
     @Schema(description = "Laboratório", example = "Laboratório XYZ")
     private String laboratory;
 

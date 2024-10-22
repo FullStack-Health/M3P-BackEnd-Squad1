@@ -3,12 +3,16 @@ package br.com.senai.medicalone.controllers.exam;
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
 import br.com.senai.medicalone.services.exam.ExamService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/exames")
@@ -18,32 +22,72 @@ public class ExamController {
     private ExamService examService;
 
     @PostMapping
-    public ResponseEntity<ExamResponseDTO> createExam(@RequestBody ExamRequestDTO dto) {
-        ExamResponseDTO createdExam = examService.createExam(dto);
-        return new ResponseEntity<>(createdExam, HttpStatus.CREATED);
+    @Operation(summary = "Criar um novo exame", description = "Endpoint para criar um novo exame")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Exame criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao criar exame")
+    })
+    public ResponseEntity<Map<String, Object>> createExam(@RequestBody ExamRequestDTO dto) {
+        try {
+            ExamResponseDTO createdExam = examService.createExam(dto);
+            return new ResponseEntity<>(Map.of("message", "Exame criado com sucesso", "exam", createdExam), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Erro ao criar exame"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExamResponseDTO> getExamById(@PathVariable Long id) {
-        ExamResponseDTO exam = examService.getExamById(id);
-        return ResponseEntity.ok(exam);
+    @Operation(summary = "Obter exame por ID", description = "Endpoint para obter um exame pelo ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exame encontrado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado")
+    })
+    public ResponseEntity<Map<String, Object>> getExamById(@PathVariable Long id) {
+        try {
+            ExamResponseDTO exam = examService.getExamById(id);
+            return new ResponseEntity<>(Map.of("message", "Exame encontrado com sucesso", "exam", exam), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Exame não encontrado"), HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExamResponseDTO> updateExam(@PathVariable Long id, @RequestBody ExamRequestDTO dto) {
-        ExamResponseDTO updatedExam = examService.updateExam(id, dto);
-        return ResponseEntity.ok(updatedExam);
+    @Operation(summary = "Atualizar um exame", description = "Endpoint para atualizar um exame")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exame atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao atualizar exame")
+    })
+    public ResponseEntity<Map<String, Object>> updateExam(@PathVariable Long id, @RequestBody ExamRequestDTO dto) {
+        try {
+            ExamResponseDTO updatedExam = examService.updateExam(id, dto);
+            return new ResponseEntity<>(Map.of("message", "Exame atualizado com sucesso", "exam", updatedExam), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Erro ao atualizar exame"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteExam(@PathVariable Long id) {
-        examService.deleteExam(id);
-        return ResponseEntity.noContent().build();
+    @Operation(summary = "Excluir um exame", description = "Endpoint para excluir um exame")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exame excluído com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado")
+    })
+    public ResponseEntity<Map<String, String>> deleteExam(@PathVariable Long id) {
+        try {
+            examService.deleteExam(id);
+            return new ResponseEntity<>(Map.of("message", "Exame excluído com sucesso"), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Exame não encontrado"), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping
-    public ResponseEntity<List<ExamResponseDTO>> listExams(@RequestParam(required = false) String name) {
+    @Operation(summary = "Listar todos os exames", description = "Endpoint para listar todos os exames")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso")
+    })
+    public ResponseEntity<Map<String, Object>> listExams(@RequestParam(required = false) String name) {
         List<ExamResponseDTO> exams = examService.listExams(name);
-        return ResponseEntity.ok(exams);
+        return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", exams), HttpStatus.OK);
     }
 }

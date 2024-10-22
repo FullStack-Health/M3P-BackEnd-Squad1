@@ -4,12 +4,15 @@ import br.com.senai.medicalone.dtos.appointment.AppointmentRequestDTO;
 import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
 import br.com.senai.medicalone.services.appointment.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/consultas")
@@ -20,36 +23,71 @@ public class AppointmentController {
 
     @PostMapping
     @Operation(summary = "Criar uma nova consulta", description = "Endpoint para criar uma nova consulta")
-    public ResponseEntity<AppointmentResponseDTO> createAppointment(@RequestBody AppointmentRequestDTO dto) {
-        AppointmentResponseDTO createdAppointment = appointmentService.createAppointment(dto);
-        return new ResponseEntity<>(createdAppointment, HttpStatus.CREATED);
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Consulta criada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao criar consulta")
+    })
+    public ResponseEntity<Map<String, Object>> createAppointment(@RequestBody AppointmentRequestDTO dto) {
+        try {
+            AppointmentResponseDTO createdAppointment = appointmentService.createAppointment(dto);
+            return new ResponseEntity<>(Map.of("message", "Consulta criada com sucesso", "appointment", createdAppointment), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Erro ao criar consulta"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obter consulta por ID", description = "Endpoint para obter uma consulta pelo ID")
-    public ResponseEntity<AppointmentResponseDTO> getAppointmentById(@PathVariable Long id) {
-        AppointmentResponseDTO appointment = appointmentService.getAppointmentById(id);
-        return ResponseEntity.ok(appointment);
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consulta encontrada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
+    })
+    public ResponseEntity<Map<String, Object>> getAppointmentById(@PathVariable Long id) {
+        try {
+            AppointmentResponseDTO appointment = appointmentService.getAppointmentById(id);
+            return new ResponseEntity<>(Map.of("message", "Consulta encontrada com sucesso", "appointment", appointment), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Consulta não encontrada"), HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar uma consulta", description = "Endpoint para atualizar uma consulta")
-    public ResponseEntity<AppointmentResponseDTO> updateAppointment(@PathVariable Long id, @RequestBody AppointmentRequestDTO dto) {
-        AppointmentResponseDTO updatedAppointment = appointmentService.updateAppointment(id, dto);
-        return ResponseEntity.ok(updatedAppointment);
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consulta atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao atualizar consulta")
+    })
+    public ResponseEntity<Map<String, Object>> updateAppointment(@PathVariable Long id, @RequestBody AppointmentRequestDTO dto) {
+        try {
+            AppointmentResponseDTO updatedAppointment = appointmentService.updateAppointment(id, dto);
+            return new ResponseEntity<>(Map.of("message", "Consulta atualizada com sucesso", "appointment", updatedAppointment), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Erro ao atualizar consulta"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Excluir uma consulta", description = "Endpoint para excluir uma consulta")
-    public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
-        appointmentService.deleteAppointment(id);
-        return ResponseEntity.noContent().build();
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consulta excluída com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
+    })
+    public ResponseEntity<Map<String, String>> deleteAppointment(@PathVariable Long id) {
+        try {
+            appointmentService.deleteAppointment(id);
+            return new ResponseEntity<>(Map.of("message", "Consulta excluída com sucesso"), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Consulta não encontrada"), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping
     @Operation(summary = "Listar todas as consultas", description = "Endpoint para listar todas as consultas")
-    public ResponseEntity<List<AppointmentResponseDTO>> listAppointments() {
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consultas encontradas com sucesso")
+    })
+    public ResponseEntity<Map<String, Object>> listAppointments() {
         List<AppointmentResponseDTO> appointments = appointmentService.listAppointments();
-        return ResponseEntity.ok(appointments);
+        return new ResponseEntity<>(Map.of("message", "Consultas encontradas com sucesso", "appointments", appointments), HttpStatus.OK);
     }
 }

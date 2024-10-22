@@ -6,6 +6,9 @@ import br.com.senai.medicalone.repositories.appointment.AppointmentRepository;
 import br.com.senai.medicalone.repositories.exam.ExamRepository;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +33,10 @@ public class DashboardService {
     @Autowired
     private DashboardMetricsMapper dashboardMetricsMapper;
 
+    @Operation(summary = "Generate dashboard metrics", description = "Método para gerar métricas do dashboard")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Métricas geradas com sucesso")
+    })
     public DashboardMetricsDTO generateDashboardMetrics() {
         Map<String, Long> statistics = new HashMap<>();
 
