@@ -4,6 +4,7 @@ import br.com.senai.medicalone.dtos.appointment.AppointmentRequestDTO;
 import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
 import br.com.senai.medicalone.entities.appointment.Appointment;
 import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundException;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.mappers.appointment.AppointmentMapper;
 import br.com.senai.medicalone.repositories.appointment.AppointmentRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +32,9 @@ public class AppointmentService {
     })
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto) {
+        if (dto.getAppointmentReason() == null || dto.getAppointmentReason().isEmpty()) {
+            throw new BadRequestException("Appointment reason is required");
+        }
         Appointment appointment = appointmentMapper.toEntity(dto);
         appointment = appointmentRepository.save(appointment);
         return appointmentMapper.toResponseDTO(appointment);

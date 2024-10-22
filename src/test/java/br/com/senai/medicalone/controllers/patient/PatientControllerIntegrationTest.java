@@ -112,31 +112,32 @@ public class PatientControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(patientRequestDTO))
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.fullName").value("John Doe"))
-                .andExpect(jsonPath("$.gender").value("Masculino"))
-                .andExpect(jsonPath("$.birthDate").value("1990-01-01"))
-                .andExpect(jsonPath("$.cpf").value("12345678945"))
-                .andExpect(jsonPath("$.rg").value("1234567890"))
-                .andExpect(jsonPath("$.rgIssuer").value("SSP"))
-                .andExpect(jsonPath("$.maritalStatus").value("Solteiro"))
-                .andExpect(jsonPath("$.phone").value("99999999999"))
-                .andExpect(jsonPath("$.email").value("johndoe@example.com"))
-                .andExpect(jsonPath("$.placeOfBirth").value("São Paulo"))
-                .andExpect(jsonPath("$.emergencyContact").value("99999999999"))
-                .andExpect(jsonPath("$.allergies[0]").value("Poeira"))
-                .andExpect(jsonPath("$.allergies[1]").value("Amendoim"))
-                .andExpect(jsonPath("$.specificCare[0]").value("Precisa de acompanhamento cardíaco"))
-                .andExpect(jsonPath("$.healthInsurance").value("Unimed"))
-                .andExpect(jsonPath("$.healthInsuranceNumber").value("1234567890"))
-                .andExpect(jsonPath("$.healthInsuranceValidity").value("2025-12-31"))
-                .andExpect(jsonPath("$.address.zipCode").value("12345678"))
-                .andExpect(jsonPath("$.address.city").value("São Paulo"))
-                .andExpect(jsonPath("$.address.state").value("SP"))
-                .andExpect(jsonPath("$.address.street").value("Rua Exemplo"))
-                .andExpect(jsonPath("$.address.number").value("123"))
-                .andExpect(jsonPath("$.address.complement").value("Apto 101"))
-                .andExpect(jsonPath("$.address.neighborhood").value("Centro"))
-                .andExpect(jsonPath("$.address.referencePoint").value("Próximo ao mercado"));
+                .andExpect(jsonPath("$.message").value("Paciente criado com sucesso"))
+                .andExpect(jsonPath("$.patient.fullName").value("John Doe"))
+                .andExpect(jsonPath("$.patient.gender").value("Masculino"))
+                .andExpect(jsonPath("$.patient.birthDate").value("1990-01-01"))
+                .andExpect(jsonPath("$.patient.cpf").value("12345678945"))
+                .andExpect(jsonPath("$.patient.rg").value("1234567890"))
+                .andExpect(jsonPath("$.patient.rgIssuer").value("SSP"))
+                .andExpect(jsonPath("$.patient.maritalStatus").value("Solteiro"))
+                .andExpect(jsonPath("$.patient.phone").value("99999999999"))
+                .andExpect(jsonPath("$.patient.email").value("johndoe@example.com"))
+                .andExpect(jsonPath("$.patient.placeOfBirth").value("São Paulo"))
+                .andExpect(jsonPath("$.patient.emergencyContact").value("99999999999"))
+                .andExpect(jsonPath("$.patient.allergies[0]").value("Poeira"))
+                .andExpect(jsonPath("$.patient.allergies[1]").value("Amendoim"))
+                .andExpect(jsonPath("$.patient.specificCare[0]").value("Precisa de acompanhamento cardíaco"))
+                .andExpect(jsonPath("$.patient.healthInsurance").value("Unimed"))
+                .andExpect(jsonPath("$.patient.healthInsuranceNumber").value("1234567890"))
+                .andExpect(jsonPath("$.patient.healthInsuranceValidity").value("2025-12-31"))
+                .andExpect(jsonPath("$.patient.address.zipCode").value("12345678"))
+                .andExpect(jsonPath("$.patient.address.city").value("São Paulo"))
+                .andExpect(jsonPath("$.patient.address.state").value("SP"))
+                .andExpect(jsonPath("$.patient.address.street").value("Rua Exemplo"))
+                .andExpect(jsonPath("$.patient.address.number").value("123"))
+                .andExpect(jsonPath("$.patient.address.complement").value("Apto 101"))
+                .andExpect(jsonPath("$.patient.address.neighborhood").value("Centro"))
+                .andExpect(jsonPath("$.patient.address.referencePoint").value("Próximo ao mercado"));
     }
 
     @Test
@@ -146,7 +147,8 @@ public class PatientControllerIntegrationTest {
         mockMvc.perform(get("/api/pacientes/{id}", savedPatient.getId())
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fullName").value("John Doe"));
+                .andExpect(jsonPath("$.message").value("Paciente encontrado com sucesso"))
+                .andExpect(jsonPath("$.patient.fullName").value("John Doe"));
     }
 
     @Test
@@ -159,7 +161,8 @@ public class PatientControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(patientRequestDTO))
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fullName").value("Jane Doe"));
+                .andExpect(jsonPath("$.message").value("Paciente atualizado com sucesso"))
+                .andExpect(jsonPath("$.patient.fullName").value("Jane Doe"));
     }
 
     @Test
@@ -169,7 +172,7 @@ public class PatientControllerIntegrationTest {
         mockMvc.perform(delete("/api/pacientes/{id}", savedPatient.getId())
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("paciente excluido com sucesso"));
+                .andExpect(jsonPath("$.message").value("Paciente excluído com sucesso"));
     }
 
     @Test
@@ -180,7 +183,8 @@ public class PatientControllerIntegrationTest {
                         .param("size", "10")
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].fullName").value("John Doe"));
+                .andExpect(jsonPath("$.message").value("Pacientes encontrados com sucesso"))
+                .andExpect(jsonPath("$.patients.content[0].fullName").value("John Doe"));
     }
 
     @Test
@@ -190,7 +194,8 @@ public class PatientControllerIntegrationTest {
         mockMvc.perform(get("/api/pacientes/cpf/{cpf}", savedPatient.getCpf())
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.cpf").value(savedPatient.getCpf()));
+                .andExpect(jsonPath("$.message").value("Paciente encontrado com sucesso"))
+                .andExpect(jsonPath("$.patient.cpf").value(savedPatient.getCpf()));
     }
 
     @Test
@@ -200,7 +205,8 @@ public class PatientControllerIntegrationTest {
         mockMvc.perform(get("/api/pacientes/nome/{name}", patientRequestDTO.getFullName())
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fullName").value(patientRequestDTO.getFullName()));
+                .andExpect(jsonPath("$.message").value("Pacientes encontrados com sucesso"))
+                .andExpect(jsonPath("$.patients[0].fullName").value(patientRequestDTO.getFullName()));
     }
 
     @Test
@@ -211,6 +217,71 @@ public class PatientControllerIntegrationTest {
         mockMvc.perform(get("/api/pacientes/telefone/{phone}", patientRequestDTO.getPhone().replaceAll("[^0-9]", ""))
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].phone").value(patientRequestDTO.getPhone().replaceAll("[^0-9]", "")));
+                .andExpect(jsonPath("$.message").value("Pacientes encontrados com sucesso"))
+                .andExpect(jsonPath("$.patients[0].phone").value(patientRequestDTO.getPhone().replaceAll("[^0-9]", "")));
+    }
+
+    @Test
+    public void testCreatePatient_MissingData() throws Exception {
+        PatientRequestDTO invalidPatientRequestDTO = new PatientRequestDTO();
+        mockMvc.perform(post("/api/pacientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidPatientRequestDTO))
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Dados ausentes ou incorretos"));
+    }
+
+    @Test
+    public void testGetPatientById_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/{id}", 999L)
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Paciente não encontrado"));
+    }
+
+    @Test
+    public void testUpdatePatient_InvalidData() throws Exception {
+        PatientResponseDTO savedPatient = patientService.createPatient(patientRequestDTO);
+        patientRequestDTO.setFullName(""); // Invalid data
+
+        mockMvc.perform(put("/api/pacientes/{id}", savedPatient.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patientRequestDTO))
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Dados ausentes ou incorretos"));
+    }
+
+    @Test
+    public void testDeletePatient_NotFound() throws Exception {
+        mockMvc.perform(delete("/api/pacientes/{id}", 999L)
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Paciente não encontrado com ID: 999"));
+    }
+
+    @Test
+    public void testGetPatientByCpf_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/cpf/{cpf}", "000.000.000-00")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Paciente não encontrado"));
+    }
+
+    @Test
+    public void testGetPatientsByName_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/nome/{name}", "NonExistentName")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Pacientes não encontrados"));
+    }
+
+    @Test
+    public void testGetPatientsByPhone_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/telefone/{phone}", "0000000000")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Pacientes não encontrados"));
     }
 }

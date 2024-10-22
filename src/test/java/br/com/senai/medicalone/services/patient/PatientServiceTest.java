@@ -348,4 +348,70 @@ class PatientServiceTest {
 
         assertThrows(PatientNotFoundException.class, () -> patientService.getPatientsByPhone(phone));
     }
+
+    @Test
+    void createPatient_MissingEmail_ShouldThrowException() {
+        PatientRequestDTO requestDTO = new PatientRequestDTO();
+        requestDTO.setFullName("John Doe");
+
+        assertThrows(BadRequestException.class, () -> patientService.createPatient(requestDTO));
+    }
+
+    @Test
+    void updatePatient_MissingPhone_ShouldThrowException() {
+        Long id = 1L;
+        PatientRequestDTO requestDTO = new PatientRequestDTO();
+        requestDTO.setFullName("John Doe Updated");
+
+        assertThrows(BadRequestException.class, () -> patientService.updatePatient(id, requestDTO));
+    }
+
+    @Test
+    void createPatient_EmailAlreadyExists_ShouldThrowException() {
+        PatientRequestDTO requestDTO = new PatientRequestDTO();
+        requestDTO.setFullName("John Doe");
+        requestDTO.setEmail("john.doe@example.com");
+        requestDTO.setGender("Masculino");
+        requestDTO.setBirthDate(LocalDate.of(1990, 1, 1));
+        requestDTO.setCpf("123.456.789-00");
+        requestDTO.setRg("1234567890");
+        requestDTO.setRgIssuer("SSP");
+        requestDTO.setMaritalStatus("Solteiro");
+        requestDTO.setPhone("99999999999");
+        requestDTO.setPlaceOfBirth("São Paulo");
+        requestDTO.setEmergencyContact("99999999999");
+        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado")); // Adicionando o campo obrigatório
+
+        when(patientRepository.existsByEmail(anyString())).thenReturn(true);
+
+        assertThrows(PatientAlreadyExistsException.class, () -> patientService.createPatient(requestDTO));
+    }
+
+    @Test
+    void createPatient_CpfAlreadyExists_ShouldThrowException() {
+        PatientRequestDTO requestDTO = new PatientRequestDTO();
+        requestDTO.setFullName("John Doe");
+        requestDTO.setCpf("123.456.789-00");
+        requestDTO.setGender("Masculino");
+        requestDTO.setBirthDate(LocalDate.of(1990, 1, 1));
+        requestDTO.setRg("1234567890");
+        requestDTO.setRgIssuer("SSP");
+        requestDTO.setMaritalStatus("Solteiro");
+        requestDTO.setPhone("99999999999");
+        requestDTO.setEmail("john.doe@example.com");
+        requestDTO.setPlaceOfBirth("São Paulo");
+        requestDTO.setEmergencyContact("99999999999");
+        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado")); // Adicionando o campo obrigatório
+
+        when(patientRepository.existsByCpf(anyString())).thenReturn(true);
+
+        assertThrows(PatientAlreadyExistsException.class, () -> patientService.createPatient(requestDTO));
+    }
+
+    @Test
+    void getPatientById_InvalidId_ShouldThrowException() {
+        Long id = -1L;
+
+        assertThrows(PatientNotFoundException.class, () -> patientService.getPatientById(id));
+    }
 }

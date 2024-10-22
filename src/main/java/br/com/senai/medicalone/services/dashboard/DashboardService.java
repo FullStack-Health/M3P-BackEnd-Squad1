@@ -40,7 +40,11 @@ public class DashboardService {
     public DashboardMetricsDTO generateDashboardMetrics() {
         Map<String, Long> statistics = new HashMap<>();
 
-        statistics.put("patientCount", patientRepository.count());
+        try {
+            statistics.put("patientCount", patientRepository.count());
+        } catch (RuntimeException e) {
+            statistics.put("patientCount", 0L);
+        }
         statistics.put("appointmentCount", appointmentRepository.count());
         statistics.put("examCount", examRepository.count());
         statistics.put("userCount", userRepository.count());
