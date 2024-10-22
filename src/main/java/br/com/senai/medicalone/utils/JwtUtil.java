@@ -69,7 +69,6 @@ public class JwtUtil {
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().name());
-        claims.put("id", user.getId());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())
@@ -91,12 +90,12 @@ public class JwtUtil {
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String email = getEmailFromToken(token);
-        final Long id = getIdFromToken(token);
-        return (email.equals(userDetails.getUsername()) && id.equals(userDetails.getAuthorities().iterator().next().getAuthority()) && !isTokenExpired(token));
+        final String role = getRoleFromToken(token);
+        return (email.equals(userDetails.getUsername()) && role.equals(userDetails.getAuthorities().iterator().next().getAuthority()) && !isTokenExpired(token));
     }
 
-    public Long getIdFromToken(String token) {
-        return getClaimFromToken(token, claims -> claims.get("id", Long.class));
+    public String getRoleFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("role", String.class));
     }
 
     public String getEmailFromToken(String token) {
