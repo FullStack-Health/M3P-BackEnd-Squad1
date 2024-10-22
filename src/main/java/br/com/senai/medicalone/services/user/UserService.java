@@ -6,7 +6,6 @@ import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.*;
-import br.com.senai.medicalone.mappers.user.UserMapper;
 import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
@@ -38,7 +37,6 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-
     @Autowired
     public UserService(UserRepository userRepository, PreRegisterUserRepository preRegisterUserRepository,
                        PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
@@ -54,16 +52,24 @@ public class UserService {
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
             @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
     })
-    public User createUser(User user){
-        validateUserFields(user);
-        if (userRepository.existsByEmail(user.getEmail())) {
+    public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
+        validateUserFields(userRequestDTO);
+        if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
         }
-        if (userRepository.existsByCpf(user.getCpf())) {
+        if (userRepository.existsByCpf(userRequestDTO.getCpf())) {
             throw new DataConflictException("CPF já cadastrado.");
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        User user = new User();
+        user.setName(userRequestDTO.getName());
+        user.setEmail(userRequestDTO.getEmail());
+        user.setBirthDate(userRequestDTO.getBirthDate());
+        user.setPhone(userRequestDTO.getPhone());
+        user.setCpf(userRequestDTO.getCpf());
+        user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
+        user.setRole(userRequestDTO.getRole());
+        User savedUser = userRepository.save(user);
+        return convertToUserResponseDTO(savedUser);
     }
 
     @Operation(summary = "Pre-register a user", description = "Método para pré-registrar um usuário")
@@ -84,14 +90,14 @@ public class UserService {
         return preRegisterUserRepository.save(preRegisterUser);
     }
 
-    private void validateUserFields(User user) {
-        if (user.getName() == null || user.getName().isEmpty() ||
-                user.getEmail() == null || user.getEmail().isEmpty() ||
-                user.getBirthDate() == null ||
-                user.getPhone() == null || user.getPhone().isEmpty() ||
-                user.getCpf() == null || user.getCpf().isEmpty() ||
-                user.getPassword() == null || user.getPassword().isEmpty() ||
-                user.getRole() == null) {
+    private void validateUserFields(UserRequestDTO userRequestDTO) {
+        if (userRequestDTO.getName() == null || userRequestDTO.getName().isEmpty() ||
+                userRequestDTO.getEmail() == null || userRequestDTO.getEmail().isEmpty() ||
+                userRequestDTO.getBirthDate() == null ||
+                userRequestDTO.getPhone() == null || userRequestDTO.getPhone().isEmpty() ||
+                userRequestDTO.getCpf() == null || userRequestDTO.getCpf().isEmpty() ||
+                userRequestDTO.getPassword() == null || userRequestDTO.getPassword().isEmpty() ||
+                userRequestDTO.getRole() == null) {
             throw new ValidationException("Dados ausentes ou incorretos");
         }
     }
@@ -103,7 +109,6 @@ public class UserService {
             throw new BadRequestException("Dados ausentes ou incorretos");
         }
     }
-
 
     private String maskPassword(String password) {
         if (password == null) {
@@ -118,15 +123,16 @@ public class UserService {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
             @ApiResponse(responseCode = "409", description = "Não é possível atualizar usuários com perfil PACIENTE")
     })
-    public User updateUser(Long id, User updatedUser){
+    public UserResponseDTO updateUser(Long id, UserRequestDTO updatedUserDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
         if (user.getRole().equals(RoleType.PACIENTE)) {
             throw new DataConflictException("Não é possível atualizar usuários com perfil PACIENTE");
         }
-        user.setEmail(updatedUser.getEmail());
-        user.setName(updatedUser.getName());
-        return userRepository.save(user);
+        user.setEmail(updatedUserDTO.getEmail());
+        user.setName(updatedUserDTO.getName());
+        User updatedUser = userRepository.save(user);
+        return convertToUserResponseDTO(updatedUser);
     }
 
     @Operation(summary = "Delete a user", description = "Método para excluir um usuário")
@@ -148,14 +154,11 @@ public class UserService {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso")
     })
-    public Page<User> findAllUsers(Pageable pageable) {
+    public Page<UserResponseDTO> findAllUsers(Pageable pageable) {
         Page<User> usersPage = userRepository.findAll(pageable);
-        List<User> filteredUsers = usersPage.stream()
+        List<UserResponseDTO> filteredUsers = usersPage.stream()
                 .filter(user -> !user.getRole().equals(RoleType.PACIENTE))
-                .map(user -> {
-                    user.setPassword(maskPassword(user.getPassword()));
-                    return user;
-                })
+                .map(this::convertToUserResponseDTO)
                 .collect(Collectors.toList());
         return new PageImpl<>(filteredUsers, pageable, usersPage.getTotalElements());
     }
@@ -165,14 +168,14 @@ public class UserService {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
-    public User findUserById(Long id) {
+    public UserResponseDTO findUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
         if (user.getRole().equals(RoleType.PACIENTE)) {
             throw new UserNotFoundException("Usuário não encontrado");
         }
         user.setPassword(maskPassword(user.getPassword()));
-        return user;
+        return convertToUserResponseDTO(user);
     }
 
     @Operation(summary = "Login a user", description = "Método para login de um usuário")
@@ -231,5 +234,17 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    public UserResponseDTO convertToUserResponseDTO(User user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setBirthDate(user.getBirthDate());
+        dto.setPhone(user.getPhone());
+        dto.setCpf(user.getCpf());
+        dto.setRole(user.getRole());
+        return dto;
     }
 }

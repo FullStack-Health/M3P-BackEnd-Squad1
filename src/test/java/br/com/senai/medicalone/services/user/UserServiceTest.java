@@ -1,10 +1,11 @@
 package br.com.senai.medicalone.services.user;
+
+import br.com.senai.medicalone.dtos.user.UserRequestDTO;
+import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
-import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
-import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
-import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
+import br.com.senai.medicalone.exceptions.customexceptions.*;
 import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
@@ -23,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -50,9 +52,6 @@ public class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    @InjectMocks
-    private UserDetailsServiceImpl userDetailsService;
-
     private User user;
 
     @BeforeEach
@@ -65,70 +64,110 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testPreRegisterUser_Success() {
-        PreRegisterUser preRegisterUser = new PreRegisterUser();
-        preRegisterUser.setEmail("test@example.com");
-        preRegisterUser.setPassword("password");
-        preRegisterUser.setRole(RoleType.ADMIN);
+    public void testCreateUser_Success() {
+        UserRequestDTO userRequestDTO = new UserRequestDTO();
+        userRequestDTO.setName("Test User");
+        userRequestDTO.setEmail("test@example.com");
+        userRequestDTO.setBirthDate(LocalDate.now());
+        userRequestDTO.setPhone("123456789");
+        userRequestDTO.setCpf("12345678900");
+        userRequestDTO.setPassword("password");
+        userRequestDTO.setRole(RoleType.ADMIN);
 
-        when(preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())).thenReturn(false);
-        when(passwordEncoder.encode(preRegisterUser.getPassword())).thenReturn("encodedPassword");
-        when(preRegisterUserRepository.save(preRegisterUser)).thenReturn(preRegisterUser);
+        User savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setName("Test User");
+        savedUser.setEmail("test@example.com");
+        savedUser.setBirthDate(LocalDate.now());
+        savedUser.setPhone("123456789");
+        savedUser.setCpf("12345678900");
+        savedUser.setPassword("encodedPassword");
+        savedUser.setRole(RoleType.ADMIN);
 
-        PreRegisterUser createdPreRegisterUser = userService.preRegisterUser(preRegisterUser);
+        when(userRepository.existsByEmail(userRequestDTO.getEmail())).thenReturn(false);
+        when(userRepository.existsByCpf(userRequestDTO.getCpf())).thenReturn(false);
+        when(passwordEncoder.encode(userRequestDTO.getPassword())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        assertNotNull(createdPreRegisterUser);
-        assertEquals("test@example.com", createdPreRegisterUser.getEmail());
-        verify(preRegisterUserRepository, times(1)).save(preRegisterUser);
+        UserResponseDTO createdUser = userService.createUser(userRequestDTO);
+
+        assertNotNull(createdUser);
+        assertEquals("test@example.com", createdUser.getEmail());
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
-    public void testPreRegisterUser_EmailAlreadyExists() {
-        PreRegisterUser preRegisterUser = new PreRegisterUser();
-        preRegisterUser.setEmail("test@example.com");
+    public void testCreateUser_EmailAlreadyExists() {
+        UserRequestDTO userRequestDTO = new UserRequestDTO();
+        userRequestDTO.setName("Test User");
+        userRequestDTO.setEmail("test@example.com");
+        userRequestDTO.setBirthDate(LocalDate.now());
+        userRequestDTO.setPhone("123456789");
+        userRequestDTO.setCpf("12345678900");
+        userRequestDTO.setPassword("password");
+        userRequestDTO.setRole(RoleType.ADMIN);
 
-        when(preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())).thenReturn(true);
+        when(userRepository.existsByEmail(userRequestDTO.getEmail())).thenReturn(true);
 
-        assertThrows(DataConflictException.class, () -> userService.preRegisterUser(preRegisterUser));
+        assertThrows(DataConflictException.class, () -> userService.createUser(userRequestDTO));
+    }
+
+    @Test
+    public void testCreateUser_CpfAlreadyExists() {
+        UserRequestDTO userRequestDTO = new UserRequestDTO();
+        userRequestDTO.setName("Test User");
+        userRequestDTO.setEmail("test@example.com");
+        userRequestDTO.setBirthDate(LocalDate.now());
+        userRequestDTO.setPhone("123456789");
+        userRequestDTO.setCpf("12345678900");
+        userRequestDTO.setPassword("password");
+        userRequestDTO.setRole(RoleType.ADMIN);
+
+        when(userRepository.existsByCpf(userRequestDTO.getCpf())).thenReturn(true);
+
+        assertThrows(DataConflictException.class, () -> userService.createUser(userRequestDTO));
     }
 
     @Test
     public void testUpdateUser_Success() {
-        User user = new User();
-        user.setId(1L);
-        user.setRole(RoleType.ADMIN);
-
-        User updatedUser = new User();
-        updatedUser.setEmail("updated@example.com");
-        updatedUser.setName("Updated Name");
+        UserRequestDTO updatedUserDTO = new UserRequestDTO();
+        updatedUserDTO.setEmail("updated@example.com");
+        updatedUserDTO.setName("Updated Name");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(user)).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
-        User result = userService.updateUser(1L, updatedUser);
+        UserResponseDTO result = userService.updateUser(1L, updatedUserDTO);
 
         assertNotNull(result);
         assertEquals("updated@example.com", result.getEmail());
         assertEquals("Updated Name", result.getName());
-        verify(userRepository, times(1)).save(user);
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     public void testUpdateUser_UserNotFound() {
+        UserRequestDTO updatedUserDTO = new UserRequestDTO();
+        updatedUserDTO.setEmail("updated@example.com");
+
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        User updatedUser = new User();
-        updatedUser.setEmail("updated@example.com");
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, updatedUserDTO));
+    }
 
-        assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, updatedUser));
+    @Test
+    public void testUpdateUser_CannotUpdatePaciente() {
+        user.setRole(RoleType.PACIENTE);
+        UserRequestDTO updatedUserDTO = new UserRequestDTO();
+        updatedUserDTO.setEmail("updated@example.com");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(DataConflictException.class, () -> userService.updateUser(1L, updatedUserDTO));
     }
 
     @Test
     public void testDeleteUser_Success() {
-        User user = new User();
-        user.setId(1L);
-        user.setRole(RoleType.ADMIN);
-
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         userService.deleteUser(1L);
@@ -144,6 +183,14 @@ public class UserServiceTest {
     }
 
     @Test
+    public void testDeleteUser_CannotDeletePaciente() {
+        user.setRole(RoleType.PACIENTE);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(DataConflictException.class, () -> userService.deleteUser(1L));
+    }
+
+    @Test
     public void testFindAllUsers_Success() {
         User user = new User();
         user.setRole(RoleType.ADMIN);
@@ -151,7 +198,7 @@ public class UserServiceTest {
 
         when(userRepository.findAll(any(PageRequest.class))).thenReturn(page);
 
-        Page<User> result = userService.findAllUsers(PageRequest.of(0, 10));
+        Page<UserResponseDTO> result = userService.findAllUsers(PageRequest.of(0, 10));
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
@@ -190,9 +237,6 @@ public class UserServiceTest {
 
     @Test
     public void testResetPassword_Success() {
-        User user = new User();
-        user.setEmail("test@example.com");
-
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.encode("newpassword")).thenReturn("encodedNewPassword");
 
@@ -207,5 +251,75 @@ public class UserServiceTest {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.resetPassword("test@example.com", "newpassword"));
+    }
+
+    @Test
+    public void testCreateUser_MissingFields() {
+        UserRequestDTO userRequestDTO = new UserRequestDTO();
+
+        assertThrows(ValidationException.class, () -> userService.createUser(userRequestDTO));
+    }
+
+    @Test
+    public void testPreRegisterUser_Success() {
+        PreRegisterUser preRegisterUser = new PreRegisterUser();
+        preRegisterUser.setEmail("test@example.com");
+        preRegisterUser.setPassword("password");
+        preRegisterUser.setRole(RoleType.ADMIN);
+
+        when(preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode(preRegisterUser.getPassword())).thenReturn("encodedPassword");
+        when(preRegisterUserRepository.save(any(PreRegisterUser.class))).thenReturn(preRegisterUser);
+
+        PreRegisterUser result = userService.preRegisterUser(preRegisterUser);
+
+        assertNotNull(result);
+        assertEquals("test@example.com", result.getEmail());
+        verify(preRegisterUserRepository, times(1)).save(any(PreRegisterUser.class));
+    }
+
+    @Test
+    public void testPreRegisterUser_EmailAlreadyExists() {
+        PreRegisterUser preRegisterUser = new PreRegisterUser();
+        preRegisterUser.setEmail("test@example.com");
+
+        when(preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())).thenReturn(true);
+
+        assertThrows(DataConflictException.class, () -> userService.preRegisterUser(preRegisterUser));
+    }
+
+    @Test
+    public void testPreRegisterUser_InvalidRole() {
+        PreRegisterUser preRegisterUser = new PreRegisterUser();
+        preRegisterUser.setEmail("test@example.com");
+        preRegisterUser.setPassword("password");
+        preRegisterUser.setRole(RoleType.PACIENTE);
+
+        assertThrows(BadRequestException.class, () -> userService.preRegisterUser(preRegisterUser));
+    }
+
+    @Test
+    public void testFindUserById_Success() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        UserResponseDTO result = userService.findUserById(1L);
+
+        assertNotNull(result);
+        assertEquals("test@example.com", result.getEmail());
+    }
+
+    @Test
+    public void testFindUserById_UserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.findUserById(1L));
+    }
+
+    @Test
+    public void testFindUserById_PacienteRole() {
+        user.setRole(RoleType.PACIENTE);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(UserNotFoundException.class, () -> userService.findUserById(1L));
     }
 }

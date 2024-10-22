@@ -3,9 +3,16 @@ package br.com.senai.medicalone.services.exam;
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
 import br.com.senai.medicalone.entities.exam.Exam;
+import br.com.senai.medicalone.entities.patient.Patient;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.ExamNotFoundException;
+import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.exam.ExamMapper;
 import br.com.senai.medicalone.repositories.exam.ExamRepository;
+import br.com.senai.medicalone.repositories.patient.PatientRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +29,34 @@ public class ExamService {
     @Autowired
     private ExamMapper examMapper;
 
+    @Autowired
+    private PatientRepository patientRepository;
+
+    @Operation(summary = "Create a new exam", description = "Método para criar um novo exame")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Exame criado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+    })
     @Transactional
     public ExamResponseDTO createExam(ExamRequestDTO dto) {
+        Optional<Patient> patientOptional = patientRepository.findById(dto.getPatientId());
+        if (patientOptional.isEmpty()) {
+            throw new PatientNotFoundException("Paciente não encontrado");
+        }
+        if (dto.getName() == null || dto.getName().isEmpty()) {
+            throw new BadRequestException("Exam name is required");
+        }
         Exam exam = examMapper.toEntity(dto);
+        exam.setPatient(patientOptional.get());
         exam = examRepository.save(exam);
         return examMapper.toResponseDTO(exam);
     }
 
+    @Operation(summary = "Get exam by ID", description = "Método para obter um exame pelo ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exame encontrado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado")
+    })
     public ExamResponseDTO getExamById(Long id) {
         Optional<Exam> examOptional = examRepository.findById(id);
         if (examOptional.isEmpty()) {
@@ -37,11 +65,19 @@ public class ExamService {
         return examMapper.toResponseDTO(examOptional.get());
     }
 
+    @Operation(summary = "Update exam", description = "Método para atualizar um exame")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exame atualizado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado")
+    })
     @Transactional
     public ExamResponseDTO updateExam(Long id, ExamRequestDTO dto) {
         Optional<Exam> examOptional = examRepository.findById(id);
         if (examOptional.isEmpty()) {
             throw new ExamNotFoundException("Exame não encontrado");
+        }
+        if (dto.getName() == null || dto.getName().isEmpty()) {
+            throw new BadRequestException("Exam name is required");
         }
         Exam exam = examOptional.get();
         exam.setName(dto.getName());
@@ -55,6 +91,11 @@ public class ExamService {
         return examMapper.toResponseDTO(exam);
     }
 
+    @Operation(summary = "Delete exam", description = "Método para deletar um exame")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Exame deletado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado")
+    })
     @Transactional
     public void deleteExam(Long id) {
         if (!examRepository.existsById(id)) {
@@ -63,6 +104,10 @@ public class ExamService {
         examRepository.deleteById(id);
     }
 
+    @Operation(summary = "List exams", description = "Método para listar exames")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exames listados com sucesso")
+    })
     public List<ExamResponseDTO> listExams(String name) {
         List<Exam> exams;
         if (name != null && !name.isEmpty()) {
