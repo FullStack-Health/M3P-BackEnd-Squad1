@@ -24,19 +24,23 @@ public class Appointment {
 
     @NotBlank
     @Size(min = 8, max = 64)
+    @Column(nullable = false, length = 64)
     @Schema(description = "Motivo da consulta", example = "Dor de cabeça")
     private String appointmentReason;
 
     @NotNull
+    @Column(nullable = false)
     @Schema(description = "Data da consulta", example = "2023-10-01")
     private LocalDate appointmentDate;
 
     @NotNull
+    @Column(nullable = false)
     @Schema(description = "Hora da consulta", example = "10:30")
     private LocalTime appointmentTime;
 
     @NotBlank
     @Size(min = 16, max = 1024)
+    @Column(nullable = false, length = 1024)
     @Schema(description = "Descrição do problema", example = "Paciente apresenta dor intensa na cabeça.")
     private String problemDescription;
 

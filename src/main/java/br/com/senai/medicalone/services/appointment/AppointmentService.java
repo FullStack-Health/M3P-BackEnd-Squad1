@@ -6,6 +6,9 @@ import br.com.senai.medicalone.entities.appointment.Appointment;
 import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundException;
 import br.com.senai.medicalone.mappers.appointment.AppointmentMapper;
 import br.com.senai.medicalone.repositories.appointment.AppointmentRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,10 @@ public class AppointmentService {
     @Autowired
     private AppointmentMapper appointmentMapper;
 
+    @Operation(summary = "Create a new appointment", description = "Método para criar uma nova consulta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Consulta criada com sucesso")
+    })
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto) {
         Appointment appointment = appointmentMapper.toEntity(dto);
@@ -29,6 +36,11 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointment);
     }
 
+    @Operation(summary = "Get appointment by ID", description = "Método para obter uma consulta pelo ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consulta encontrada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
+    })
     public AppointmentResponseDTO getAppointmentById(Long id) {
         Optional<Appointment> appointmentOptional = appointmentRepository.findById(id);
         if (appointmentOptional.isEmpty()) {
@@ -37,6 +49,11 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointmentOptional.get());
     }
 
+    @Operation(summary = "Update appointment", description = "Método para atualizar uma consulta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consulta atualizada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
+    })
     @Transactional
     public AppointmentResponseDTO updateAppointment(Long id, AppointmentRequestDTO dto) {
         Optional<Appointment> appointmentOptional = appointmentRepository.findById(id);
@@ -54,6 +71,11 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointment);
     }
 
+    @Operation(summary = "Delete appointment", description = "Método para deletar uma consulta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Consulta deletada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
+    })
     @Transactional
     public void deleteAppointment(Long id) {
         if (!appointmentRepository.existsById(id)) {
@@ -62,6 +84,10 @@ public class AppointmentService {
         appointmentRepository.deleteById(id);
     }
 
+    @Operation(summary = "List appointments", description = "Método para listar consultas")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consultas listadas com sucesso")
+    })
     public List<AppointmentResponseDTO> listAppointments() {
         List<Appointment> appointments = appointmentRepository.findAll();
         return appointments.stream()

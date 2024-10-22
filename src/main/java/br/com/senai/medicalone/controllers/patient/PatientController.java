@@ -33,9 +33,13 @@ public class PatientController {
             @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos")
     })
-    public ResponseEntity<PatientResponseDTO> createPatient(@RequestBody PatientRequestDTO patientRequestDTO) {
-        PatientResponseDTO responseDTO = patientService.createPatient(patientRequestDTO);
-        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
+    public ResponseEntity<Map<String, Object>> createPatient(@RequestBody PatientRequestDTO patientRequestDTO) {
+        try {
+            PatientResponseDTO responseDTO = patientService.createPatient(patientRequestDTO);
+            return new ResponseEntity<>(Map.of("message", "Paciente criado com sucesso", "patient", responseDTO), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Dados ausentes ou incorretos"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/{id}")
@@ -44,9 +48,13 @@ public class PatientController {
             @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
     })
-    public ResponseEntity<PatientResponseDTO> getPatientById(@PathVariable Long id) {
-        PatientResponseDTO responseDTO = patientService.getPatientById(id);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> getPatientById(@PathVariable Long id) {
+        try {
+            PatientResponseDTO responseDTO = patientService.getPatientById(id);
+            return new ResponseEntity<>(Map.of("message", "Paciente encontrado com sucesso", "patient", responseDTO), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}")
@@ -56,9 +64,13 @@ public class PatientController {
             @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
     })
-    public ResponseEntity<PatientResponseDTO> updatePatient(@PathVariable Long id, @RequestBody PatientRequestDTO patientRequestDTO) {
-        PatientResponseDTO responseDTO = patientService.updatePatient(id, patientRequestDTO);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> updatePatient(@PathVariable Long id, @RequestBody PatientRequestDTO patientRequestDTO) {
+        try {
+            PatientResponseDTO responseDTO = patientService.updatePatient(id, patientRequestDTO);
+            return new ResponseEntity<>(Map.of("message", "Paciente atualizado com sucesso", "patient", responseDTO), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Dados ausentes ou incorretos"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -70,11 +82,9 @@ public class PatientController {
     public ResponseEntity<Map<String, String>> deletePatient(@PathVariable Long id) {
         boolean isDeleted = patientService.deletePatient(id);
         if (isDeleted) {
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put("message", "paciente excluido com sucesso");
-            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+            return new ResponseEntity<>(Map.of("message", "Paciente excluído com sucesso"), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -83,12 +93,12 @@ public class PatientController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso")
     })
-    public ResponseEntity<Page<PatientResponseDTO>> getAllPatients(
+    public ResponseEntity<Map<String, Object>> getAllPatients(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PatientResponseDTO> responseDTOs = patientService.getAllPatients(pageable);
-        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
     }
 
     @GetMapping("/cpf/{cpf}")
@@ -97,9 +107,13 @@ public class PatientController {
             @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
     })
-    public ResponseEntity<PatientResponseDTO> getPatientByCpf(@PathVariable String cpf) {
-        PatientResponseDTO responseDTO = patientService.getPatientByCpf(cpf);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> getPatientByCpf(@PathVariable String cpf) {
+        try {
+            PatientResponseDTO responseDTO = patientService.getPatientByCpf(cpf);
+            return new ResponseEntity<>(Map.of("message", "Paciente encontrado com sucesso", "patient", responseDTO), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/nome/{name}")
@@ -108,9 +122,13 @@ public class PatientController {
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
     })
-    public ResponseEntity<List<PatientResponseDTO>> getPatientsByName(@PathVariable String name) {
-        List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(name);
-        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> getPatientsByName(@PathVariable String name) {
+        try {
+            List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(name);
+            return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/telefone/{phone}")
@@ -119,8 +137,12 @@ public class PatientController {
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
     })
-    public ResponseEntity<List<PatientResponseDTO>> getPatientsByPhone(@PathVariable String phone) {
-        List<PatientResponseDTO> responseDTOs = patientService.getPatientsByPhone(phone);
-        return new ResponseEntity<>(responseDTOs, HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> getPatientsByPhone(@PathVariable String phone) {
+        try {
+            List<PatientResponseDTO> responseDTOs = patientService.getPatientsByPhone(phone);
+            return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
+        }
     }
 }
