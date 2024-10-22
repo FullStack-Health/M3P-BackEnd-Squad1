@@ -40,16 +40,6 @@ public class RecordController {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             token = authorizationHeader.substring(7);
         }
-
-        Long authenticatedPatientId = jwtUtil.getIdFromToken(token);
-
-        if (SecurityContextHolder.getContext().getAuthentication() != null &&
-                SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-                        .stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE")) &&
-                !authenticatedPatientId.equals(id)) {
-            return ResponseEntity.status(403).build();
-        }
-
         RecordResponseDTO chart = recordService.getChartByPatientId(id);
         return ResponseEntity.ok(chart);
     }
