@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -69,16 +70,26 @@ public class UserServiceTest {
         UserRequestDTO userRequestDTO = new UserRequestDTO();
         userRequestDTO.setName("Test User");
         userRequestDTO.setEmail("test@example.com");
-        userRequestDTO.setBirthDate(null);
+        userRequestDTO.setBirthDate(LocalDate.now());
         userRequestDTO.setPhone("123456789");
         userRequestDTO.setCpf("12345678900");
         userRequestDTO.setPassword("password");
         userRequestDTO.setRole(RoleType.ADMIN);
 
+        User savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setName("Test User");
+        savedUser.setEmail("test@example.com");
+        savedUser.setBirthDate(LocalDate.now());
+        savedUser.setPhone("123456789");
+        savedUser.setCpf("12345678900");
+        savedUser.setPassword("encodedPassword");
+        savedUser.setRole(RoleType.ADMIN);
+
         when(userRepository.existsByEmail(userRequestDTO.getEmail())).thenReturn(false);
         when(userRepository.existsByCpf(userRequestDTO.getCpf())).thenReturn(false);
         when(passwordEncoder.encode(userRequestDTO.getPassword())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         UserResponseDTO createdUser = userService.createUser(userRequestDTO);
 
@@ -90,9 +101,31 @@ public class UserServiceTest {
     @Test
     public void testCreateUser_EmailAlreadyExists() {
         UserRequestDTO userRequestDTO = new UserRequestDTO();
+        userRequestDTO.setName("Test User");
         userRequestDTO.setEmail("test@example.com");
+        userRequestDTO.setBirthDate(LocalDate.now());
+        userRequestDTO.setPhone("123456789");
+        userRequestDTO.setCpf("12345678900");
+        userRequestDTO.setPassword("password");
+        userRequestDTO.setRole(RoleType.ADMIN);
 
         when(userRepository.existsByEmail(userRequestDTO.getEmail())).thenReturn(true);
+
+        assertThrows(DataConflictException.class, () -> userService.createUser(userRequestDTO));
+    }
+
+    @Test
+    public void testCreateUser_CpfAlreadyExists() {
+        UserRequestDTO userRequestDTO = new UserRequestDTO();
+        userRequestDTO.setName("Test User");
+        userRequestDTO.setEmail("test@example.com");
+        userRequestDTO.setBirthDate(LocalDate.now());
+        userRequestDTO.setPhone("123456789");
+        userRequestDTO.setCpf("12345678900");
+        userRequestDTO.setPassword("password");
+        userRequestDTO.setRole(RoleType.ADMIN);
+
+        when(userRepository.existsByCpf(userRequestDTO.getCpf())).thenReturn(true);
 
         assertThrows(DataConflictException.class, () -> userService.createUser(userRequestDTO));
     }
@@ -125,6 +158,17 @@ public class UserServiceTest {
     }
 
     @Test
+    public void testUpdateUser_CannotUpdatePaciente() {
+        user.setRole(RoleType.PACIENTE);
+        UserRequestDTO updatedUserDTO = new UserRequestDTO();
+        updatedUserDTO.setEmail("updated@example.com");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(DataConflictException.class, () -> userService.updateUser(1L, updatedUserDTO));
+    }
+
+    @Test
     public void testDeleteUser_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
@@ -138,6 +182,14 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(1L));
+    }
+
+    @Test
+    public void testDeleteUser_CannotDeletePaciente() {
+        user.setRole(RoleType.PACIENTE);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(DataConflictException.class, () -> userService.deleteUser(1L));
     }
 
     @Test

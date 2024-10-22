@@ -21,7 +21,6 @@ import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -51,18 +50,19 @@ public class UserControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(preRegisterUserJson))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("preuser@example.com"));
+                .andExpect(jsonPath("$.message").value("Usuário pré-cadastrado com sucesso"));
     }
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     public void testCreateUser_Success() throws Exception {
-        String userJson = "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"123.456.789-00\",\"password\":\"password123\",\"role\":\"ADMIN\"}";
+        String userJson = "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"12345678900\",\"password\":\"password123\",\"role\":\"ADMIN\"}";
 
         mockMvc.perform(post("/api/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Usuário criado com sucesso"))
                 .andExpect(jsonPath("$.user.email").value("john.doe@example.com"));
     }
 
@@ -74,19 +74,18 @@ public class UserControllerIntegrationTest {
         user.setPassword("password");
         user.setRole(RoleType.ADMIN);
         user.setBirthDate(LocalDate.of(1990, 1, 1));
-        user.setCpf("123.456.789-00");
+        user.setCpf("12345678900");
         user.setName("Test User");
         user.setPhone("1234567890");
         userRepository.save(user);
 
-        String updatedUserJson = "{\"name\":\"John Doe Updated\",\"email\":\"updateduser@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"123.456.789-00\",\"password\":\"newpassword123\",\"role\":\"ADMIN\"}";
+        String updatedUserJson = "{\"name\":\"John Doe Updated\",\"email\":\"updateduser@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"12345678900\",\"password\":\"newpassword123\",\"role\":\"ADMIN\"}";
 
         mockMvc.perform(put("/api/usuarios/" + user.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedUserJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("updateduser@example.com"))
-                .andExpect(jsonPath("$.name").value("John Doe Updated"));
+                .andExpect(jsonPath("$.message").value("Usuário atualizado com sucesso"));
     }
 
     @Test
@@ -99,7 +98,7 @@ public class UserControllerIntegrationTest {
         user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
         user.setBirthDate(LocalDate.of(1990, 1, 1));
-        user.setCpf("123.456.789-00");
+        user.setCpf("12345678900");
         user.setName("Test User");
         user.setPhone("1234567890");
         userRepository.save(user);
@@ -113,7 +112,6 @@ public class UserControllerIntegrationTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(responseContent);
@@ -135,7 +133,7 @@ public class UserControllerIntegrationTest {
         user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
         user.setBirthDate(LocalDate.of(1990, 1, 1));
-        user.setCpf("123.456.789-00");
+        user.setCpf("12345678900");
         user.setName("Test User");
         user.setPhone("1234567890");
         userRepository.save(user);
@@ -157,7 +155,8 @@ public class UserControllerIntegrationTest {
         mockMvc.perform(get("/api/usuarios/" + user.getId())
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("test@example.com"));
+                .andExpect(jsonPath("$.message").value("Usuário encontrado com sucesso"))
+                .andExpect(jsonPath("$.user.email").value("test@example.com"));
     }
 
     @Test
@@ -170,7 +169,7 @@ public class UserControllerIntegrationTest {
         user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
         user.setBirthDate(LocalDate.of(1990, 1, 1));
-        user.setCpf("123.456.789-00");
+        user.setCpf("12345678900");
         user.setName("Test User");
         user.setPhone("1234567890");
         userRepository.save(user);
@@ -194,9 +193,9 @@ public class UserControllerIntegrationTest {
                         .param("size", "10")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].email").value("test@example.com"));
+                .andExpect(jsonPath("$.message").value("Usuários encontrados com sucesso"))
+                .andExpect(jsonPath("$.users.content[0].email").value("test@example.com"));
     }
-
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -207,7 +206,7 @@ public class UserControllerIntegrationTest {
         user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
         user.setBirthDate(LocalDate.of(1990, 1, 1));
-        user.setCpf("123.456.789-00");
+        user.setCpf("12345678900");
         user.setName("Test User");
         user.setPhone("1234567890");
         userRepository.save(user);
@@ -218,7 +217,7 @@ public class UserControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isNotEmpty());
+                .andExpect(jsonPath("$.token").isNotEmpty());
     }
 
     @Test
@@ -231,7 +230,7 @@ public class UserControllerIntegrationTest {
         user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
         user.setBirthDate(LocalDate.of(1990, 1, 1));
-        user.setCpf("123.456.789-00");
+        user.setCpf("12345678900");
         user.setName("Test User");
         user.setPhone("1234567890");
         userRepository.save(user);
@@ -258,5 +257,4 @@ public class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Senha redefinida com sucesso"));
     }
-
 }
