@@ -45,4 +45,12 @@ public class SpringDocConfig {
                 .pathsToMatch("/api/dashboard/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi prontuarioApi() {
+        return GroupedOpenApi.builder()
+                .group("prontuários")
+                .pathsToMatch("/api/pacientes/**")
+                .build();
+    }
 }

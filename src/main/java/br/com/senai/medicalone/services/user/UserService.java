@@ -38,8 +38,11 @@ public class UserService {
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserService(UserRepository userRepository, PreRegisterUserRepository preRegisterUserRepository,
-                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository,
+                       PreRegisterUserRepository preRegisterUserRepository,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager,
+                       JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.preRegisterUserRepository = preRegisterUserRepository;
         this.passwordEncoder = passwordEncoder;
@@ -54,12 +57,14 @@ public class UserService {
     })
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         validateUserFields(userRequestDTO);
+
         if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
         }
         if (userRepository.existsByCpf(userRequestDTO.getCpf())) {
             throw new DataConflictException("CPF já cadastrado.");
         }
+
         User user = new User();
         user.setName(userRequestDTO.getName());
         user.setEmail(userRequestDTO.getEmail());
@@ -68,6 +73,7 @@ public class UserService {
         user.setCpf(userRequestDTO.getCpf());
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         user.setRole(userRequestDTO.getRole());
+
         User savedUser = userRepository.save(user);
         return convertToUserResponseDTO(savedUser);
     }
@@ -83,9 +89,11 @@ public class UserService {
             throw new DataConflictException("Email já cadastrado.");
         }
         validatePreRegisterUserFields(preRegisterUser);
+
         if (preRegisterUser.getRole() != RoleType.ADMIN && preRegisterUser.getRole() != RoleType.MEDICO) {
             throw new BadRequestException("Role inválida. Somente ADMIN ou MEDICO são permitidos.");
         }
+
         preRegisterUser.setPassword(passwordEncoder.encode(preRegisterUser.getPassword()));
         return preRegisterUserRepository.save(preRegisterUser);
     }
@@ -126,11 +134,14 @@ public class UserService {
     public UserResponseDTO updateUser(Long id, UserRequestDTO updatedUserDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
         if (user.getRole().equals(RoleType.PACIENTE)) {
             throw new DataConflictException("Não é possível atualizar usuários com perfil PACIENTE");
         }
+
         user.setEmail(updatedUserDTO.getEmail());
         user.setName(updatedUserDTO.getName());
+
         User updatedUser = userRepository.save(user);
         return convertToUserResponseDTO(updatedUser);
     }
@@ -144,9 +155,11 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
         if (user.getRole().equals(RoleType.PACIENTE)) {
             throw new DataConflictException("Não é possível excluir usuários com perfil PACIENTE");
         }
+
         userRepository.delete(user);
     }
 
@@ -171,9 +184,11 @@ public class UserService {
     public UserResponseDTO findUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
         if (user.getRole().equals(RoleType.PACIENTE)) {
             throw new UserNotFoundException("Usuário não encontrado");
         }
+
         user.setPassword(maskPassword(user.getPassword()));
         return convertToUserResponseDTO(user);
     }
@@ -198,7 +213,7 @@ public class UserService {
                         "email", user.getEmail(),
                         "role", user.getRole().name()
                 );
-                return jwtUtil.generateToken(claims, email);
+                return jwtUtil.generateToken(claims, user.getEmail()); // Método correto
             }
 
             Optional<PreRegisterUser> preRegisterUserOptional = preRegisterUserRepository.findByEmail(email);
@@ -209,7 +224,7 @@ public class UserService {
                         "email", preRegisterUser.getEmail(),
                         "role", preRegisterUser.getRole().name()
                 );
-                return jwtUtil.generateToken(claims, email);
+                return jwtUtil.generateToken(claims, preRegisterUser.getEmail()); // Método correto
             }
 
             throw new UserNotFoundException("Usuário não encontrado");

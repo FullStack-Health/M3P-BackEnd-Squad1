@@ -1,5 +1,6 @@
 package br.com.senai.medicalone.entities.appointment;
 
+import br.com.senai.medicalone.entities.record.Record;
 import br.com.senai.medicalone.entities.patient.Patient;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -56,4 +57,9 @@ public class Appointment {
     @JoinColumn(name = "patient_id", nullable = false)
     @Schema(description = "ID do paciente associado a consulta")
     private Patient patient;
+
+    @ManyToOne
+    @JoinColumn(name = "record_id")
+    @Schema(description = "ID do chart associado a paciente")
+    private Record record;
 }

@@ -66,4 +66,11 @@ public class GlobalExceptionHandler {
         responseBody.put("message", ex.getMessage());
         return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(RecordNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleChartNotFoundException(RecordNotFoundException ex) {
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", ex.getMessage());
+        return new ResponseEntity<>(responseBody, HttpStatus.NOT_FOUND);
+    }
 }
