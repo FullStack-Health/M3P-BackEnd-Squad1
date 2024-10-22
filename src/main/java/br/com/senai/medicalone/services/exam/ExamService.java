@@ -4,6 +4,7 @@ import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
 import br.com.senai.medicalone.entities.exam.Exam;
 import br.com.senai.medicalone.entities.patient.Patient;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.ExamNotFoundException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.exam.ExamMapper;
@@ -42,6 +43,9 @@ public class ExamService {
         if (patientOptional.isEmpty()) {
             throw new PatientNotFoundException("Paciente não encontrado");
         }
+        if (dto.getName() == null || dto.getName().isEmpty()) {
+            throw new BadRequestException("Exam name is required");
+        }
         Exam exam = examMapper.toEntity(dto);
         exam.setPatient(patientOptional.get());
         exam = examRepository.save(exam);
@@ -71,6 +75,9 @@ public class ExamService {
         Optional<Exam> examOptional = examRepository.findById(id);
         if (examOptional.isEmpty()) {
             throw new ExamNotFoundException("Exame não encontrado");
+        }
+        if (dto.getName() == null || dto.getName().isEmpty()) {
+            throw new BadRequestException("Exam name is required");
         }
         Exam exam = examOptional.get();
         exam.setName(dto.getName());

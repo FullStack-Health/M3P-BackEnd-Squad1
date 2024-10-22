@@ -220,4 +220,68 @@ public class PatientControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Pacientes encontrados com sucesso"))
                 .andExpect(jsonPath("$.patients[0].phone").value(patientRequestDTO.getPhone().replaceAll("[^0-9]", "")));
     }
+
+    @Test
+    public void testCreatePatient_MissingData() throws Exception {
+        PatientRequestDTO invalidPatientRequestDTO = new PatientRequestDTO();
+        mockMvc.perform(post("/api/pacientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidPatientRequestDTO))
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Dados ausentes ou incorretos"));
+    }
+
+    @Test
+    public void testGetPatientById_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/{id}", 999L)
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Paciente não encontrado"));
+    }
+
+    @Test
+    public void testUpdatePatient_InvalidData() throws Exception {
+        PatientResponseDTO savedPatient = patientService.createPatient(patientRequestDTO);
+        patientRequestDTO.setFullName(""); // Invalid data
+
+        mockMvc.perform(put("/api/pacientes/{id}", savedPatient.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patientRequestDTO))
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Dados ausentes ou incorretos"));
+    }
+
+    @Test
+    public void testDeletePatient_NotFound() throws Exception {
+        mockMvc.perform(delete("/api/pacientes/{id}", 999L)
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Paciente não encontrado com ID: 999"));
+    }
+
+    @Test
+    public void testGetPatientByCpf_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/cpf/{cpf}", "000.000.000-00")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Paciente não encontrado"));
+    }
+
+    @Test
+    public void testGetPatientsByName_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/nome/{name}", "NonExistentName")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Pacientes não encontrados"));
+    }
+
+    @Test
+    public void testGetPatientsByPhone_NotFound() throws Exception {
+        mockMvc.perform(get("/api/pacientes/telefone/{phone}", "0000000000")
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Pacientes não encontrados"));
+    }
 }

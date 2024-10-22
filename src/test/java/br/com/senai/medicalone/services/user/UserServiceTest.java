@@ -5,9 +5,7 @@ import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
-import br.com.senai.medicalone.exceptions.customexceptions.DataConflictException;
-import br.com.senai.medicalone.exceptions.customexceptions.UnauthorizedException;
-import br.com.senai.medicalone.exceptions.customexceptions.UserNotFoundException;
+import br.com.senai.medicalone.exceptions.customexceptions.*;
 import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.utils.JwtUtil;
@@ -253,5 +251,75 @@ public class UserServiceTest {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.resetPassword("test@example.com", "newpassword"));
+    }
+
+    @Test
+    public void testCreateUser_MissingFields() {
+        UserRequestDTO userRequestDTO = new UserRequestDTO();
+
+        assertThrows(ValidationException.class, () -> userService.createUser(userRequestDTO));
+    }
+
+    @Test
+    public void testPreRegisterUser_Success() {
+        PreRegisterUser preRegisterUser = new PreRegisterUser();
+        preRegisterUser.setEmail("test@example.com");
+        preRegisterUser.setPassword("password");
+        preRegisterUser.setRole(RoleType.ADMIN);
+
+        when(preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode(preRegisterUser.getPassword())).thenReturn("encodedPassword");
+        when(preRegisterUserRepository.save(any(PreRegisterUser.class))).thenReturn(preRegisterUser);
+
+        PreRegisterUser result = userService.preRegisterUser(preRegisterUser);
+
+        assertNotNull(result);
+        assertEquals("test@example.com", result.getEmail());
+        verify(preRegisterUserRepository, times(1)).save(any(PreRegisterUser.class));
+    }
+
+    @Test
+    public void testPreRegisterUser_EmailAlreadyExists() {
+        PreRegisterUser preRegisterUser = new PreRegisterUser();
+        preRegisterUser.setEmail("test@example.com");
+
+        when(preRegisterUserRepository.existsByEmail(preRegisterUser.getEmail())).thenReturn(true);
+
+        assertThrows(DataConflictException.class, () -> userService.preRegisterUser(preRegisterUser));
+    }
+
+    @Test
+    public void testPreRegisterUser_InvalidRole() {
+        PreRegisterUser preRegisterUser = new PreRegisterUser();
+        preRegisterUser.setEmail("test@example.com");
+        preRegisterUser.setPassword("password");
+        preRegisterUser.setRole(RoleType.PACIENTE);
+
+        assertThrows(BadRequestException.class, () -> userService.preRegisterUser(preRegisterUser));
+    }
+
+    @Test
+    public void testFindUserById_Success() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        UserResponseDTO result = userService.findUserById(1L);
+
+        assertNotNull(result);
+        assertEquals("test@example.com", result.getEmail());
+    }
+
+    @Test
+    public void testFindUserById_UserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.findUserById(1L));
+    }
+
+    @Test
+    public void testFindUserById_PacienteRole() {
+        user.setRole(RoleType.PACIENTE);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(UserNotFoundException.class, () -> userService.findUserById(1L));
     }
 }

@@ -257,4 +257,80 @@ public class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Senha redefinida com sucesso"));
     }
+
+    @Test
+    public void testPreRegisterUser_EmailAlreadyExists() throws Exception {
+        String preRegisterUserJson = "{\"email\":\"preuser@example.com\",\"password\":\"password\",\"role\":\"ADMIN\"}";
+
+        mockMvc.perform(post("/api/usuarios/pre-registro")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(preRegisterUserJson))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/usuarios/pre-registro")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(preRegisterUserJson))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Email já cadastrado."));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testCreateUser_EmailAlreadyExists() throws Exception {
+        String userJson = "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"12345678900\",\"password\":\"password123\",\"role\":\"ADMIN\"}";
+
+        mockMvc.perform(post("/api/usuarios")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/usuarios")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Email já cadastrado."));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testUpdateUser_UserNotFound() throws Exception {
+        String updatedUserJson = "{\"name\":\"John Doe Updated\",\"email\":\"updateduser@example.com\",\"birthDate\":\"1990-01-01\",\"phone\":\"1234567890\",\"cpf\":\"12345678900\",\"password\":\"newpassword123\",\"role\":\"ADMIN\"}";
+
+        mockMvc.perform(put("/api/usuarios/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedUserJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testDeleteUser_UserNotFound() throws Exception {
+        mockMvc.perform(delete("/api/usuarios/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
+    }
+
+    @Test
+    public void testLoginUser_InvalidCredentials() throws Exception {
+        String loginJson = "{\"email\":\"invalid@example.com\",\"password\":\"wrongpassword\"}";
+
+        mockMvc.perform(post("/api/usuarios/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Credenciais inválidas"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    public void testResetPassword_EmailNotFound() throws Exception {
+        String resetPasswordJson = "{\"newPassword\":\"newpassword\"}";
+
+        mockMvc.perform(put("/api/usuarios/email/nonexistent@example.com/redefinir-senha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(resetPasswordJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Usuário não encontrado"));
+    }
 }
