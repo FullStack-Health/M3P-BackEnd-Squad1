@@ -7,7 +7,7 @@ import java.util.Map;
 @Schema(description = "DTO que representa as métricas do dashboard")
 public class DashboardMetricsDTO {
 
-    @Schema(description = "Mapa de estatísticas do dashboard", example = "{\"patientCount\": 100, \"appointmentCount\": 50, \"examCount\": 75, \"userCount\": 10}")
+    @Schema(description = "Dados do dashboard", example = "{\"statistics\": {\"appointmentCount\": 4, \"userCount\": 7, \"patientCount\": 1, \"examCount\": 2}}")
     private Map<String, Long> statistics;
 
     public DashboardMetricsDTO(Map<String, Long> statistics) {

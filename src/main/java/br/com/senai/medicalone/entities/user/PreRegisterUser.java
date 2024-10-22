@@ -18,7 +18,7 @@ import java.util.Collections;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Entidade que representa um usuário pré-registrado")
+@Schema(description = "Entidade que representa um usuário pré-registrado", example = "{\"email\": \"usuario2@example.com\", \"password\": \"senha123\", \"role\": \"ADMIN\"}")
 public class PreRegisterUser implements UserDetails {
 
     @Id

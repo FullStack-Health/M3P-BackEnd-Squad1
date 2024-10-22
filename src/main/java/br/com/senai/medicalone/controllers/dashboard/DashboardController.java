@@ -3,6 +3,8 @@ package br.com.senai.medicalone.controllers.dashboard;
 import br.com.senai.medicalone.dtos.dashboard.DashboardMetricsDTO;
 import br.com.senai.medicalone.services.dashboard.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +25,8 @@ public class DashboardController {
 
     @Operation(summary = "Get dashboard data", description = "Endpoint para obter dados do dashboard")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Dados do dashboard obtidos com sucesso"),
-            @ApiResponse(responseCode = "500", description = "Erro ao obter dados do dashboard")
+            @ApiResponse(responseCode = "200", description = "Dados do dashboard obtidos com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"data\": {\"statistics\": {\"appointmentCount\": 4, \"userCount\": 7, \"patientCount\": 1, \"examCount\": 2}}, \"message\": \"Dados do dashboard obtidos com sucesso\"}"))),
+            @ApiResponse(responseCode = "500", description = "Erro ao obter dados do dashboard", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Erro ao obter dados do dashboard\"}")))
     })
     @GetMapping
     public ResponseEntity<Map<String, Object>> getDashboardData() {

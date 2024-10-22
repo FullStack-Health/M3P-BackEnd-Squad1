@@ -91,7 +91,7 @@ class PatientServiceTest {
         PatientResponseDTO responseDTO = patientService.createPatient(requestDTO);
 
         assertNotNull(responseDTO);
-        verify(userService, times(1)).createUser(any(User.class));
+        verify(userService, times(1)).createUser(any(br.com.senai.medicalone.dtos.user.UserRequestDTO.class));
     }
 
     @Test

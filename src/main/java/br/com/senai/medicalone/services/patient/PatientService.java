@@ -2,9 +2,10 @@ package br.com.senai.medicalone.services.patient;
 
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
+import br.com.senai.medicalone.dtos.user.UserRequestDTO;
+import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.entities.user.RoleType;
-import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
@@ -59,15 +60,15 @@ public class PatientService {
             patient.setPassword(patient.getCpf());
             patient = patientRepository.save(patient);
 
-            User user = new User();
-            user.setName(patient.getFullName());
-            user.setEmail(patient.getEmail());
-            user.setBirthDate(patient.getBirthDate());
-            user.setPhone(patient.getPhone());
-            user.setCpf(patient.getCpf());
-            user.setPassword(patient.getCpf());
-            user.setRole(RoleType.PACIENTE);
-            userService.createUser(user);
+            UserRequestDTO userRequestDTO = new UserRequestDTO();
+            userRequestDTO.setName(patient.getFullName());
+            userRequestDTO.setEmail(patient.getEmail());
+            userRequestDTO.setBirthDate(patient.getBirthDate());
+            userRequestDTO.setPhone(patient.getPhone());
+            userRequestDTO.setCpf(patient.getCpf());
+            userRequestDTO.setPassword(patient.getCpf());
+            userRequestDTO.setRole(RoleType.PACIENTE);
+            UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
 
             return patientMapper.toResponseDTO(patient);
         } catch (DataIntegrityViolationException ex) {
@@ -230,6 +231,4 @@ public class PatientService {
             throw new PatientNotFoundException("Pacientes não encontrados com o telefone: " + phone);
         }
     }
-
-
 }

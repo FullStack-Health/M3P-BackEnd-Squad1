@@ -4,6 +4,8 @@ import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
 import br.com.senai.medicalone.services.patient.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,8 +32,8 @@ public class PatientController {
     @PostMapping
     @Operation(summary = "Create a new patient", description = "Endpoint para criar um novo paciente")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos")
+            @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente criado com sucesso\", \"patient\": {\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}}"))),
+            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Dados ausentes ou incorretos\"}")))
     })
     public ResponseEntity<Map<String, Object>> createPatient(@RequestBody PatientRequestDTO patientRequestDTO) {
         try {
@@ -45,8 +47,8 @@ public class PatientController {
     @GetMapping("/{id}")
     @Operation(summary = "Get patient by ID", description = "Endpoint para obter um paciente pelo ID")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente encontrado com sucesso\", \"patient\": {\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}}"))),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
     })
     public ResponseEntity<Map<String, Object>> getPatientById(@PathVariable Long id) {
         try {
@@ -60,9 +62,9 @@ public class PatientController {
     @PutMapping("/{id}")
     @Operation(summary = "Update a patient", description = "Endpoint para atualizar um paciente")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Paciente atualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos"),
-            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+            @ApiResponse(responseCode = "200", description = "Paciente atualizado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente atualizado com sucesso\", \"patient\": {\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}}"))),
+            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Dados ausentes ou incorretos\"}"))),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
     })
     public ResponseEntity<Map<String, Object>> updatePatient(@PathVariable Long id, @RequestBody PatientRequestDTO patientRequestDTO) {
         try {
@@ -76,8 +78,8 @@ public class PatientController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a patient", description = "Endpoint para excluir um paciente")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Paciente excluído com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+            @ApiResponse(responseCode = "200", description = "Paciente excluído com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente excluído com sucesso\"}"))),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
     })
     public ResponseEntity<Map<String, String>> deletePatient(@PathVariable Long id) {
         boolean isDeleted = patientService.deletePatient(id);
@@ -91,7 +93,7 @@ public class PatientController {
     @GetMapping
     @Operation(summary = "Get all patients", description = "Endpoint para obter todos os pacientes")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso")
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes encontrados com sucesso\", \"patients\": [{\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}]}")))
     })
     public ResponseEntity<Map<String, Object>> getAllPatients(
             @RequestParam(defaultValue = "0") int page,
@@ -104,8 +106,8 @@ public class PatientController {
     @GetMapping("/cpf/{cpf}")
     @Operation(summary = "Get patient by CPF", description = "Endpoint para obter um paciente pelo CPF")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente encontrado com sucesso\", \"patient\": {\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}}"))),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
     })
     public ResponseEntity<Map<String, Object>> getPatientByCpf(@PathVariable String cpf) {
         try {
@@ -119,8 +121,8 @@ public class PatientController {
     @GetMapping("/nome/{name}")
     @Operation(summary = "Get patients by name", description = "Endpoint para obter pacientes pelo nome")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes encontrados com sucesso\", \"patients\": [{\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}]}"))),
+            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes não encontrados\"}")))
     })
     public ResponseEntity<Map<String, Object>> getPatientsByName(@PathVariable String name) {
         try {
@@ -134,8 +136,8 @@ public class PatientController {
     @GetMapping("/telefone/{phone}")
     @Operation(summary = "Get patients by phone", description = "Endpoint para obter pacientes pelo telefone")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes encontrados com sucesso\", \"patients\": [{\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}]}"))),
+            @ApiResponse(responseCode = "404", description = "Pacientes não encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes não encontrados\"}")))
     })
     public ResponseEntity<Map<String, Object>> getPatientsByPhone(@PathVariable String phone) {
         try {

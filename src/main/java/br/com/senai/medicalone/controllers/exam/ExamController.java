@@ -4,6 +4,8 @@ import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
 import br.com.senai.medicalone.services.exam.ExamService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +26,8 @@ public class ExamController {
     @PostMapping
     @Operation(summary = "Criar um novo exame", description = "Endpoint para criar um novo exame")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Exame criado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Erro ao criar exame")
+            @ApiResponse(responseCode = "201", description = "Exame criado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame criado com sucesso\", \"exam\": {\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}}"))),
+            @ApiResponse(responseCode = "400", description = "Erro ao criar exame", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Erro ao criar exame\"}")))
     })
     public ResponseEntity<Map<String, Object>> createExam(@RequestBody ExamRequestDTO dto) {
         try {
@@ -39,8 +41,8 @@ public class ExamController {
     @GetMapping("/{id}")
     @Operation(summary = "Obter exame por ID", description = "Endpoint para obter um exame pelo ID")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Exame encontrado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Exame não encontrado")
+            @ApiResponse(responseCode = "200", description = "Exame encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame encontrado com sucesso\", \"exam\": {\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}}"))),
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame não encontrado\"}")))
     })
     public ResponseEntity<Map<String, Object>> getExamById(@PathVariable Long id) {
         try {
@@ -54,8 +56,8 @@ public class ExamController {
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar um exame", description = "Endpoint para atualizar um exame")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Exame atualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Erro ao atualizar exame")
+            @ApiResponse(responseCode = "200", description = "Exame atualizado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame atualizado com sucesso\", \"exam\": {\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}}"))),
+            @ApiResponse(responseCode = "400", description = "Erro ao atualizar exame", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Erro ao atualizar exame\"}")))
     })
     public ResponseEntity<Map<String, Object>> updateExam(@PathVariable Long id, @RequestBody ExamRequestDTO dto) {
         try {
@@ -69,8 +71,8 @@ public class ExamController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Excluir um exame", description = "Endpoint para excluir um exame")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Exame excluído com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Exame não encontrado")
+            @ApiResponse(responseCode = "200", description = "Exame excluído com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame excluído com sucesso\"}"))),
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame não encontrado\"}")))
     })
     public ResponseEntity<Map<String, String>> deleteExam(@PathVariable Long id) {
         try {
@@ -84,7 +86,7 @@ public class ExamController {
     @GetMapping
     @Operation(summary = "Listar todos os exames", description = "Endpoint para listar todos os exames")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso")
+            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exames encontrados com sucesso\", \"exams\": [{\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}]}")))
     })
     public ResponseEntity<Map<String, Object>> listExams(@RequestParam(required = false) String name) {
         List<ExamResponseDTO> exams = examService.listExams(name);
