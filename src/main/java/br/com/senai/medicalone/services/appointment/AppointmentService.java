@@ -7,6 +7,7 @@ import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundEx
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.mappers.appointment.AppointmentMapper;
 import br.com.senai.medicalone.repositories.appointment.AppointmentRepository;
+import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,21 +30,38 @@ public class AppointmentService {
     @Autowired
     private AppointmentMapper appointmentMapper;
 
-    @Operation(summary = "Create a new appointment", description = "Método para criar uma nova consulta")
+    @Autowired
+    private PatientRepository patientRepository;
+
+
+    @Operation(summary = "Cria uma nova consulta", description = "Método para criar uma nova consulta")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Consulta criada com sucesso")
     })
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto) {
         if (dto.getAppointmentReason() == null || dto.getAppointmentReason().isEmpty()) {
-            throw new BadRequestException("Appointment reason is required");
+            throw new BadRequestException("Motivo da consulta é obrigatório");
         }
+        if (dto.getAppointmentDate() == null) {
+            throw new BadRequestException("Data da consulta é obrigatória");
+        }
+        if (dto.getAppointmentTime() == null) {
+            throw new BadRequestException("Hora da consulta é obrigatória");
+        }
+        if (dto.getProblemDescription() == null || dto.getProblemDescription().isEmpty()) {
+            throw new BadRequestException("Descrição do problema é obrigatória");
+        }
+        if (dto.getPatientId() == null || !patientRepository.existsById(dto.getPatientId())) {
+            throw new BadRequestException("Paciente não encontrado");
+        }
+
         Appointment appointment = appointmentMapper.toEntity(dto);
         appointment = appointmentRepository.save(appointment);
         return appointmentMapper.toResponseDTO(appointment);
     }
 
-    @Operation(summary = "Get appointment by ID", description = "Método para obter uma consulta pelo ID")
+    @Operation(summary = "Busca consulta por ID", description = "Método para obter uma consulta pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consulta encontrada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
@@ -56,7 +74,7 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointmentOptional.get());
     }
 
-    @Operation(summary = "Update appointment", description = "Método para atualizar uma consulta")
+    @Operation(summary = "Atualiza consulta", description = "Método para atualizar uma consulta")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consulta atualizada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
@@ -78,7 +96,7 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointment);
     }
 
-    @Operation(summary = "Delete appointment", description = "Método para deletar uma consulta")
+    @Operation(summary = "Deleta uma consulta", description = "Método para deletar uma consulta")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Consulta deletada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
@@ -91,7 +109,7 @@ public class AppointmentService {
         appointmentRepository.deleteById(id);
     }
 
-    @Operation(summary = "List appointments", description = "Método para listar consultas")
+    @Operation(summary = "Lista consultas", description = "Método para listar consultas")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consultas listadas com sucesso")
     })
