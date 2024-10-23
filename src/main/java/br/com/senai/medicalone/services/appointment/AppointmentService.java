@@ -39,6 +39,7 @@ public class AppointmentService {
             throw new BadRequestException("Appointment reason is required");
         }
         Appointment appointment = appointmentMapper.toEntity(dto);
+        appointment.setId(null);
         appointment = appointmentRepository.save(appointment);
         return appointmentMapper.toResponseDTO(appointment);
     }

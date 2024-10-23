@@ -51,6 +51,7 @@ public class ExamService {
         }
         Exam exam = examMapper.toEntity(dto);
         exam.setPatient(patientOptional.get());
+        exam.setId(null);
         exam = examRepository.save(exam);
         return examMapper.toResponseDTO(exam);
     }
