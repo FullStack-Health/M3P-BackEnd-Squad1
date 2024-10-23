@@ -1,7 +1,14 @@
 package br.com.senai.medicalone.entities.user;
 
-public enum RoleType {
+import org.springframework.security.core.GrantedAuthority;
+
+public enum RoleType implements GrantedAuthority {
     MEDICO,
     ADMIN,
-    PACIENTE
+    PACIENTE;
+
+    @Override
+    public String getAuthority() {
+        return "ROLE_" + name();
+    }
 }
