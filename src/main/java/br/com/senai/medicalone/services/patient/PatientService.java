@@ -6,11 +6,13 @@ import br.com.senai.medicalone.dtos.user.UserRequestDTO;
 import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.entities.user.RoleType;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
+import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,6 +44,9 @@ public class PatientService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Operation(summary = "Criar um novo paciente", description = "Método para criar um novo paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso"),
@@ -57,22 +62,37 @@ public class PatientService {
 
         try {
             Patient patient = patientMapper.toEntity(patientRequestDTO);
-            patient.setPassword(patient.getCpf());
+            patient.setPassword(passwordEncoder.encode(patient.getCpf()));
+
+            Optional<User> existingUser = userRepository.findByEmailOrCpf(patientRequestDTO.getEmail(), patientRequestDTO.getCpf());
+            if (existingUser.isPresent()) {
+                patient.setUser(existingUser.get());
+            } else {
+                UserRequestDTO userRequestDTO = new UserRequestDTO();
+                userRequestDTO.setName(patient.getFullName());
+                userRequestDTO.setEmail(patient.getEmail());
+                userRequestDTO.setBirthDate(patient.getBirthDate());
+                userRequestDTO.setPhone(patient.getPhone());
+                userRequestDTO.setCpf(patient.getCpf());
+                userRequestDTO.setPassword(patient.getCpf());
+                userRequestDTO.setRole(RoleType.PACIENTE);
+                UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
+
+                User newUser = new User();
+                newUser.setId(userResponseDTO.getId());
+                newUser.setName(userResponseDTO.getName());
+                newUser.setEmail(userResponseDTO.getEmail());
+                newUser.setBirthDate(userResponseDTO.getBirthDate());
+                newUser.setPhone(userResponseDTO.getPhone());
+                newUser.setCpf(userResponseDTO.getCpf());
+                newUser.setRole(userResponseDTO.getRole());
+                patient.setUser(newUser);
+            }
+
             patient = patientRepository.save(patient);
-
-            UserRequestDTO userRequestDTO = new UserRequestDTO();
-            userRequestDTO.setName(patient.getFullName());
-            userRequestDTO.setEmail(patient.getEmail());
-            userRequestDTO.setBirthDate(patient.getBirthDate());
-            userRequestDTO.setPhone(patient.getPhone());
-            userRequestDTO.setCpf(patient.getCpf());
-            userRequestDTO.setPassword(patient.getCpf());
-            userRequestDTO.setRole(RoleType.PACIENTE);
-            UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
-
             return patientMapper.toResponseDTO(patient);
         } catch (DataIntegrityViolationException ex) {
-            throw new PatientAlreadyExistsException("Paciente já cadastrado ");
+            throw new PatientAlreadyExistsException("Paciente já cadastrado");
         }
     }
 
