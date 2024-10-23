@@ -42,7 +42,7 @@ public class PatientService {
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "Create a new patient", description = "Método para criar um novo paciente")
+    @Operation(summary = "Criar um novo paciente", description = "Método para criar um novo paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso"),
             @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
@@ -76,7 +76,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get patient by ID", description = "Método para obter um paciente pelo ID")
+    @Operation(summary = "Obter paciente pelo ID", description = "Método para obter um paciente pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -90,7 +90,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Update a patient", description = "Método para atualizar um paciente")
+    @Operation(summary = "Atualizar um paciente", description = "Método para atualizar um paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Paciente atualizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -112,7 +112,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Delete a patient", description = "Método para excluir um paciente")
+    @Operation(summary = "Excluir um paciente", description = "Método para excluir um paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Paciente excluído com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -127,7 +127,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get all patients", description = "Método para obter todos os pacientes")
+    @Operation(summary = "Obter todos os pacientes", description = "Método para obter todos os pacientes")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso")
     })
@@ -190,7 +190,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get patient by CPF", description = "Método para obter um paciente pelo CPF")
+    @Operation(summary = "Obter paciente pelo CPF", description = "Método para obter um paciente pelo CPF")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -204,7 +204,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get patients by name", description = "Método para obter pacientes pelo nome")
+    @Operation(summary = "Obter pacientes pelo nome", description = "Método para obter pacientes pelo nome")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
@@ -218,7 +218,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get patients by phone", description = "Método para obter pacientes pelo telefone")
+    @Operation(summary = "Obter pacientes pelo telefone", description = "Método para obter pacientes pelo telefone")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")

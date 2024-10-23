@@ -23,7 +23,7 @@ public class DashboardController {
     @Autowired
     private DashboardService dashboardService;
 
-    @Operation(summary = "Get dashboard data", description = "Endpoint para obter dados do dashboard")
+    @Operation(summary = "Busca todos os dados dashboard", description = "Endpoint para obter dados do dashboard")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Dados do dashboard obtidos com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"data\": {\"statistics\": {\"appointmentCount\": 4, \"userCount\": 7, \"patientCount\": 1, \"examCount\": 2}}, \"message\": \"Dados do dashboard obtidos com sucesso\"}"))),
             @ApiResponse(responseCode = "500", description = "Erro ao obter dados do dashboard", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Erro ao obter dados do dashboard\"}")))

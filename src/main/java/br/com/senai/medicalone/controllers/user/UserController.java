@@ -37,7 +37,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/pre-registro")
-    @Operation(summary = "Pre-register a user", description = "Endpoint para pré-registrar um usuário")
+    @Operation(summary = "Pre registro de um usuario", description = "Endpoint para pré-registrar um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário pré-registrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário pré-cadastrado com sucesso\"}"))),
             @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Dados ausentes ou incorretos\"}"))),
@@ -55,7 +55,7 @@ public class UserController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new user", description = "Endpoint para criar um novo usuário")
+    @Operation(summary = "Cria um novo usuario", description = "Endpoint para criar um novo usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário criado com sucesso\", \"user\": {\"id\": 1, \"name\": \"John Doe\", \"email\": \"user94@example.com\", \"birthDate\": \"1990-01-01\", \"phone\": \"1234567890\", \"cpf\": \"12345678148\", \"role\": \"ADMIN\"}}"))),
             @ApiResponse(responseCode = "400", description = "Role inválida, CPF ausente ou dados ausentes", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Role inválida ou dados ausentes\"}"))),
@@ -74,7 +74,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a user", description = "Endpoint para atualizar um usuário")
+    @Operation(summary = "Atualiza um usuario", description = "Endpoint para atualizar um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário atualizado com sucesso\"}"))),
             @ApiResponse(responseCode = "400", description = "Role inválida ou dados ausentes", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Role inválida ou dados ausentes\"}"))),
@@ -93,7 +93,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a user", description = "Endpoint para excluir um usuário")
+    @Operation(summary = "Deleta um usuario", description = "Endpoint para excluir um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuário excluído com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário excluído com sucesso\"}"))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário não encontrado\"}"))),
@@ -111,7 +111,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID", description = "Endpoint para obter um usuário pelo ID")
+    @Operation(summary = "Busca usuario por ID", description = "Endpoint para obter um usuário pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário encontrado com sucesso\", \"user\": {\"id\": 1, \"name\": \"John Doe\", \"email\": \"user@example.com\", \"birthDate\": \"1990-01-01\", \"phone\": \"(99) 9 9999-9999\", \"cpf\": \"123.456.789-00\", \"role\": \"ADMIN\"}}"))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário não encontrado\"}")))
@@ -126,7 +126,7 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all users", description = "Endpoint para obter todos os usuários")
+    @Operation(summary = "Busca todos os usuarios", description = "Endpoint para obter todos os usuários")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuários encontrados com sucesso\", \"users\": [{\"id\": 1, \"name\": \"John Doe\", \"email\": \"user@example.com\", \"birthDate\": \"1990-01-01\", \"phone\": \"(99) 9 9999-9999\", \"cpf\": \"123.456.789-00\", \"role\": \"ADMIN\"}]}")))
     })
@@ -136,7 +136,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Login a user", description = "Endpoint para login de um usuário")
+    @Operation(summary = "Login de usuario", description = "Endpoint para login de um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Login realizado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"token\": \"jwt-token\"}"))),
             @ApiResponse(responseCode = "401", description = "Credenciais inválidas", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Credenciais inválidas\"}")))
@@ -153,7 +153,7 @@ public class UserController {
     }
 
     @PutMapping("/email/{email}/redefinir-senha")
-    @Operation(summary = "Reset password", description = "Endpoint para redefinir a senha de um usuário")
+    @Operation(summary = "Reseta a senha", description = "Endpoint para redefinir a senha de um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Senha redefinida com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Senha redefinida com sucesso\"}"))),
             @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Dados ausentes ou incorretos\"}")))

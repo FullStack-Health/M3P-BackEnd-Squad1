@@ -47,7 +47,7 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    @Operation(summary = "Create a new user", description = "Método para criar um novo usuário")
+    @Operation(summary = "Criar um novo usuário", description = "Método para criar um novo usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
             @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
@@ -72,7 +72,7 @@ public class UserService {
         return convertToUserResponseDTO(savedUser);
     }
 
-    @Operation(summary = "Pre-register a user", description = "Método para pré-registrar um usuário")
+    @Operation(summary = "Pré-registrar um usuário", description = "Método para pré-registrar um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário pré-registrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos"),
@@ -117,7 +117,7 @@ public class UserService {
         return password.substring(0, 4) + "*".repeat(password.length() - 4);
     }
 
-    @Operation(summary = "Update a user", description = "Método para atualizar um usuário")
+    @Operation(summary = "Atualizar um usuário", description = "Método para atualizar um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
@@ -135,7 +135,7 @@ public class UserService {
         return convertToUserResponseDTO(updatedUser);
     }
 
-    @Operation(summary = "Delete a user", description = "Método para excluir um usuário")
+    @Operation(summary = "Excluir um usuário", description = "Método para excluir um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Usuário excluído com sucesso"),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
@@ -150,7 +150,7 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    @Operation(summary = "Get all users", description = "Método para obter todos os usuários")
+    @Operation(summary = "Obter todos os usuários", description = "Método para obter todos os usuários")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso")
     })
@@ -163,7 +163,7 @@ public class UserService {
         return new PageImpl<>(filteredUsers, pageable, usersPage.getTotalElements());
     }
 
-    @Operation(summary = "Get user by ID", description = "Método para obter um usuário pelo ID")
+    @Operation(summary = "Obter usuário pelo ID", description = "Método para obter um usuário pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
@@ -178,7 +178,7 @@ public class UserService {
         return convertToUserResponseDTO(user);
     }
 
-    @Operation(summary = "Login a user", description = "Método para login de um usuário")
+    @Operation(summary = "Login de um usuário", description = "Método para login de um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
             @ApiResponse(responseCode = "401", description = "Credenciais inválidas"),
@@ -218,7 +218,7 @@ public class UserService {
         }
     }
 
-    @Operation(summary = "Reset password", description = "Método para redefinir a senha de um usuário")
+    @Operation(summary = "Redefinir senha", description = "Método para redefinir a senha de um usuário")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Senha redefinida com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos"),

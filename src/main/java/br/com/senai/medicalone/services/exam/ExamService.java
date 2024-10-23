@@ -35,7 +35,7 @@ public class ExamService {
     @Autowired
     private PatientRepository patientRepository;
 
-    @Operation(summary = "Create a new exam", description = "Método para criar um novo exame")
+    @Operation(summary = "Cria um novo exame", description = "Método para criar um novo exame")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Exame criado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -55,7 +55,7 @@ public class ExamService {
         return examMapper.toResponseDTO(exam);
     }
 
-    @Operation(summary = "Get exam by ID", description = "Método para obter um exame pelo ID")
+    @Operation(summary = "Busca exame pelo ID", description = "Método para obter um exame pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exame encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Exame não encontrado")
@@ -68,7 +68,7 @@ public class ExamService {
         return examMapper.toResponseDTO(examOptional.get());
     }
 
-    @Operation(summary = "Update exam", description = "Método para atualizar um exame")
+    @Operation(summary = "Atualiza exame", description = "Método para atualizar um exame")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exame atualizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Exame não encontrado")
@@ -94,7 +94,7 @@ public class ExamService {
         return examMapper.toResponseDTO(exam);
     }
 
-    @Operation(summary = "Delete exam", description = "Método para deletar um exame")
+    @Operation(summary = "Deleta um exame", description = "Método para deletar um exame")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Exame deletado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Exame não encontrado")
@@ -107,7 +107,7 @@ public class ExamService {
         examRepository.deleteById(id);
     }
 
-    @Operation(summary = "List exams", description = "Método para listar exames")
+    @Operation(summary = "Lista todos os exames", description = "Método para listar exames")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exames listados com sucesso")
     })

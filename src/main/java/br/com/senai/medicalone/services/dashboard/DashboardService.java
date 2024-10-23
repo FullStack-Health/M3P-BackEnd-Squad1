@@ -33,7 +33,7 @@ public class DashboardService {
     @Autowired
     private DashboardMetricsMapper dashboardMetricsMapper;
 
-    @Operation(summary = "Generate dashboard metrics", description = "Método para gerar métricas do dashboard")
+    @Operation(summary = "Gera metricas para dashboard", description = "Método para gerar métricas do dashboard")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Métricas geradas com sucesso")
     })

@@ -29,7 +29,7 @@ public class AppointmentService {
     @Autowired
     private AppointmentMapper appointmentMapper;
 
-    @Operation(summary = "Create a new appointment", description = "Método para criar uma nova consulta")
+    @Operation(summary = "Cria uma nova consulta", description = "Método para criar uma nova consulta")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Consulta criada com sucesso")
     })
@@ -43,7 +43,7 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointment);
     }
 
-    @Operation(summary = "Get appointment by ID", description = "Método para obter uma consulta pelo ID")
+    @Operation(summary = "Busca consulta por ID", description = "Método para obter uma consulta pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consulta encontrada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
@@ -56,7 +56,7 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointmentOptional.get());
     }
 
-    @Operation(summary = "Update appointment", description = "Método para atualizar uma consulta")
+    @Operation(summary = "Atualiza consulta", description = "Método para atualizar uma consulta")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consulta atualizada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
@@ -78,7 +78,7 @@ public class AppointmentService {
         return appointmentMapper.toResponseDTO(appointment);
     }
 
-    @Operation(summary = "Delete appointment", description = "Método para deletar uma consulta")
+    @Operation(summary = "Deleta uma consulta", description = "Método para deletar uma consulta")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Consulta deletada com sucesso"),
             @ApiResponse(responseCode = "404", description = "Consulta não encontrada")
@@ -91,7 +91,7 @@ public class AppointmentService {
         appointmentRepository.deleteById(id);
     }
 
-    @Operation(summary = "List appointments", description = "Método para listar consultas")
+    @Operation(summary = "Lista consultas", description = "Método para listar consultas")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consultas listadas com sucesso")
     })
