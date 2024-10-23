@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ExamService {
@@ -118,5 +119,10 @@ public class ExamService {
         return exams.stream()
                 .map(examMapper::toResponseDTO)
                 .toList();
+    }
+
+    public List<ExamResponseDTO> getExamsByPatientId(Long patientId) {
+        List<Exam> exams = examRepository.findByPatientId(patientId);
+        return exams.stream().map(examMapper::toResponseDTO).collect(Collectors.toList());
     }
 }

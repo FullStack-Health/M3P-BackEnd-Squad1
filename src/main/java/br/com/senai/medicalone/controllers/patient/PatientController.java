@@ -1,7 +1,9 @@
 package br.com.senai.medicalone.controllers.patient;
 
+import br.com.senai.medicalone.dtos.patient.PatientRecordDTO;
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
+import br.com.senai.medicalone.services.patient.PatientRecordService;
 import br.com.senai.medicalone.services.patient.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,6 +30,9 @@ public class PatientController {
 
     @Autowired
     private PatientService patientService;
+
+    @Autowired
+    private PatientRecordService patientRecordService;
 
     @PostMapping
     @Operation(summary = "Create a new patient", description = "Endpoint para criar um novo paciente")
@@ -145,6 +150,27 @@ public class PatientController {
             return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/prontuarios")
+    public ResponseEntity<Map<String, Object>> getAllPatientRecords(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<PatientRecordDTO> records = patientRecordService.getAllPatientRecords(name, id, pageable);
+        return new ResponseEntity<>(Map.of("message", "Prontuários encontrados com sucesso", "records", records), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/prontuarios")
+    public ResponseEntity<Map<String, Object>> getPatientRecord(@PathVariable Long id) {
+        try {
+            PatientRecordDTO record = patientRecordService.getPatientRecord(id);
+            return new ResponseEntity<>(Map.of("message", "Prontuário encontrado com sucesso", "record", record), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
         }
     }
 }

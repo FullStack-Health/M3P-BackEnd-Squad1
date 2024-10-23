@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentService {
@@ -97,5 +98,10 @@ public class AppointmentService {
         return appointments.stream()
                 .map(appointmentMapper::toResponseDTO)
                 .toList();
+    }
+
+    public List<AppointmentResponseDTO> getAppointmentsByPatientId(Long patientId) {
+        List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
+        return appointments.stream().map(appointmentMapper::toResponseDTO).collect(Collectors.toList());
     }
 }
