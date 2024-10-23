@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -88,8 +91,11 @@ public class AppointmentController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consultas encontradas com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consultas encontradas com sucesso\", \"appointments\": [{\"id\": 1, \"date\": \"2023-10-01\", \"patientId\": 123}]}")))
     })
-    public ResponseEntity<Map<String, Object>> listAppointments() {
-        List<AppointmentResponseDTO> appointments = appointmentService.listAppointments();
-        return new ResponseEntity<>(Map.of("message", "Consultas encontradas com sucesso", "appointments", appointments), HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> listAppointments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(pageable);
+        return new ResponseEntity<>(Map.of("message", "Consultas encontradas com sucesso", "appointments", responseDTOs), HttpStatus.OK);
     }
 }

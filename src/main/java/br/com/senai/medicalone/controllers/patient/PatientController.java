@@ -154,13 +154,17 @@ public class PatientController {
     }
 
     @GetMapping("/prontuarios")
+    @Operation(summary = "Get all patient records", description = "Endpoint para obter todos os prontuários de pacientes")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Prontuários encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Prontuários encontrados com sucesso\", \"records\": [{\"id\": 1, \"name\": \"John Doe\", \"exams\": [...], \"appointments\": [...]}]}")))
+    })
     public ResponseEntity<Map<String, Object>> getAllPatientRecords(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<PatientRecordDTO> records = patientRecordService.getAllPatientRecords(name, id, pageable);
+        Page<PatientRecordDTO> records = patientRecordService.getAllPatientRecords(name, id, pageable);
         return new ResponseEntity<>(Map.of("message", "Prontuários encontrados com sucesso", "records", records), HttpStatus.OK);
     }
 

@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,11 +95,9 @@ public class AppointmentService {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consultas listadas com sucesso")
     })
-    public List<AppointmentResponseDTO> listAppointments() {
-        List<Appointment> appointments = appointmentRepository.findAll();
-        return appointments.stream()
-                .map(appointmentMapper::toResponseDTO)
-                .toList();
+    public Page<AppointmentResponseDTO> listAppointments(Pageable pageable) {
+        Page<Appointment> appointments = appointmentRepository.findAll(pageable);
+        return appointments.map(appointmentMapper::toResponseDTO);
     }
 
     public List<AppointmentResponseDTO> getAppointmentsByPatientId(Long patientId) {
