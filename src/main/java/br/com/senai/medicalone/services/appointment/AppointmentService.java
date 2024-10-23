@@ -7,6 +7,7 @@ import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundEx
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.mappers.appointment.AppointmentMapper;
 import br.com.senai.medicalone.repositories.appointment.AppointmentRepository;
+import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,6 +30,10 @@ public class AppointmentService {
     @Autowired
     private AppointmentMapper appointmentMapper;
 
+    @Autowired
+    private PatientRepository patientRepository;
+
+
     @Operation(summary = "Cria uma nova consulta", description = "Método para criar uma nova consulta")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Consulta criada com sucesso")
@@ -36,10 +41,22 @@ public class AppointmentService {
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto) {
         if (dto.getAppointmentReason() == null || dto.getAppointmentReason().isEmpty()) {
-            throw new BadRequestException("Appointment reason is required");
+            throw new BadRequestException("Motivo da consulta é obrigatório");
         }
+        if (dto.getAppointmentDate() == null) {
+            throw new BadRequestException("Data da consulta é obrigatória");
+        }
+        if (dto.getAppointmentTime() == null) {
+            throw new BadRequestException("Hora da consulta é obrigatória");
+        }
+        if (dto.getProblemDescription() == null || dto.getProblemDescription().isEmpty()) {
+            throw new BadRequestException("Descrição do problema é obrigatória");
+        }
+        if (dto.getPatientId() == null || !patientRepository.existsById(dto.getPatientId())) {
+            throw new BadRequestException("Paciente não encontrado");
+        }
+
         Appointment appointment = appointmentMapper.toEntity(dto);
-        appointment.setId(null);
         appointment = appointmentRepository.save(appointment);
         return appointmentMapper.toResponseDTO(appointment);
     }

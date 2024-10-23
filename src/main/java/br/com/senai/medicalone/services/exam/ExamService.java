@@ -47,8 +47,18 @@ public class ExamService {
             throw new PatientNotFoundException("Paciente não encontrado");
         }
         if (dto.getName() == null || dto.getName().isEmpty()) {
-            throw new BadRequestException("Exam name is required");
+            throw new BadRequestException("Nome do exame é obrigatório");
         }
+        if (dto.getExamDate() == null) {
+            throw new BadRequestException("Data do exame é obrigatória");
+        }
+        if (dto.getExamTime() == null) {
+            throw new BadRequestException("Hora do exame é obrigatória");
+        }
+        if (dto.getType() == null || dto.getType().isEmpty()) {
+            throw new BadRequestException("Tipo do exame é obrigatório");
+        }
+
         Exam exam = examMapper.toEntity(dto);
         exam.setPatient(patientOptional.get());
         exam.setId(null);

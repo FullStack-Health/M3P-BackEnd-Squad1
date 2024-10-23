@@ -2,6 +2,7 @@ package br.com.senai.medicalone.controllers.exam;
 
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.services.exam.ExamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +36,8 @@ public class ExamController {
         try {
             ExamResponseDTO createdExam = examService.createExam(dto);
             return new ResponseEntity<>(Map.of("message", "Exame criado com sucesso", "exam", createdExam), HttpStatus.CREATED);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Erro ao criar exame"), HttpStatus.BAD_REQUEST);
         }

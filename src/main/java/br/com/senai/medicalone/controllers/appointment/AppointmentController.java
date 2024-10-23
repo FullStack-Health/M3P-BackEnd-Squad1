@@ -2,6 +2,7 @@ package br.com.senai.medicalone.controllers.appointment;
 
 import br.com.senai.medicalone.dtos.appointment.AppointmentRequestDTO;
 import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.services.appointment.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,6 +37,8 @@ public class AppointmentController {
         try {
             AppointmentResponseDTO createdAppointment = appointmentService.createAppointment(dto);
             return new ResponseEntity<>(Map.of("message", "Consulta criada com sucesso", "appointment", createdAppointment), HttpStatus.CREATED);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Erro ao criar consulta"), HttpStatus.BAD_REQUEST);
         }

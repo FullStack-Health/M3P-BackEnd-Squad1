@@ -3,10 +3,12 @@ package br.com.senai.medicalone.services.appointment;
 import br.com.senai.medicalone.dtos.appointment.AppointmentRequestDTO;
 import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
 import br.com.senai.medicalone.entities.appointment.Appointment;
+import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundException;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.mappers.appointment.AppointmentMapper;
 import br.com.senai.medicalone.repositories.appointment.AppointmentRepository;
+import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -34,6 +36,9 @@ class AppointmentServiceTest {
     @Mock
     private AppointmentMapper appointmentMapper;
 
+    @Mock
+    private PatientRepository patientRepository;
+
     @InjectMocks
     private AppointmentService appointmentService;
 
@@ -51,10 +56,12 @@ class AppointmentServiceTest {
         requestDTO.setProblemDescription("No issues");
         requestDTO.setPrescribedMedication("None");
         requestDTO.setObservations("None");
+        requestDTO.setPatientId(1L);
 
         Appointment appointment = new Appointment();
         appointment.setId(1L);
 
+        when(patientRepository.existsById(1L)).thenReturn(true);
         when(appointmentMapper.toEntity(any(AppointmentRequestDTO.class))).thenReturn(appointment);
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(appointment);
         when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
@@ -73,6 +80,23 @@ class AppointmentServiceTest {
         requestDTO.setProblemDescription("No issues");
         requestDTO.setPrescribedMedication("None");
         requestDTO.setObservations("None");
+        requestDTO.setPatientId(1L);
+
+        assertThrows(BadRequestException.class, () -> appointmentService.createAppointment(requestDTO));
+    }
+
+    @Test
+    void createAppointment_PatientNotFound_ShouldThrowException() {
+        AppointmentRequestDTO requestDTO = new AppointmentRequestDTO();
+        requestDTO.setAppointmentReason("Routine Checkup");
+        requestDTO.setAppointmentDate(LocalDate.now());
+        requestDTO.setAppointmentTime(LocalTime.now());
+        requestDTO.setProblemDescription("No issues");
+        requestDTO.setPrescribedMedication("None");
+        requestDTO.setObservations("None");
+        requestDTO.setPatientId(1L);
+
+        when(patientRepository.existsById(1L)).thenReturn(false);
 
         assertThrows(BadRequestException.class, () -> appointmentService.createAppointment(requestDTO));
     }
