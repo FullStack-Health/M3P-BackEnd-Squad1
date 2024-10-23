@@ -3,6 +3,7 @@ package br.com.senai.medicalone.controllers.patient;
 import br.com.senai.medicalone.dtos.patient.PatientRecordDTO;
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
+import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
 import br.com.senai.medicalone.services.patient.PatientRecordService;
 import br.com.senai.medicalone.services.patient.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,12 +39,15 @@ public class PatientController {
     @Operation(summary = "Cria um paciente", description = "Endpoint para criar um novo paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente criado com sucesso\", \"patient\": {\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}}"))),
-            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Dados ausentes ou incorretos\"}")))
+            @ApiResponse(responseCode = "400", description = "Dados ausentes ou incorretos", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Dados ausentes ou incorretos\"}"))),
+            @ApiResponse(responseCode = "409", description = "Paciente já cadastrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente já cadastrado\"}")))
     })
     public ResponseEntity<Map<String, Object>> createPatient(@RequestBody PatientRequestDTO patientRequestDTO) {
         try {
             PatientResponseDTO responseDTO = patientService.createPatient(patientRequestDTO);
             return new ResponseEntity<>(Map.of("message", "Paciente criado com sucesso", "patient", responseDTO), HttpStatus.CREATED);
+        } catch (PatientAlreadyExistsException e) {
+            return new ResponseEntity<>(Map.of("message", "Paciente já cadastrado"), HttpStatus.CONFLICT);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Dados ausentes ou incorretos"), HttpStatus.BAD_REQUEST);
         }
