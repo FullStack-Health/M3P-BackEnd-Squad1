@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,16 +111,14 @@ public class ExamService {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exames listados com sucesso")
     })
-    public List<ExamResponseDTO> listExams(String name) {
-        List<Exam> exams;
+    public Page<ExamResponseDTO> listExams(String name, Pageable pageable) {
+        Page<Exam> exams;
         if (name != null && !name.isEmpty()) {
-            exams = examRepository.findByName(name);
+            exams = examRepository.findByName(name, pageable);
         } else {
-            exams = examRepository.findAll();
+            exams = examRepository.findAll(pageable);
         }
-        return exams.stream()
-                .map(examMapper::toResponseDTO)
-                .toList();
+        return exams.map(examMapper::toResponseDTO);
     }
 
     public List<ExamResponseDTO> getExamsByPatientId(Long patientId) {

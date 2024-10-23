@@ -15,6 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -164,29 +168,33 @@ class ExamServiceTest {
 
     @Test
     void listExams_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
         List<Exam> exams = List.of(new Exam(), new Exam());
+        Page<Exam> examPage = new PageImpl<>(exams, pageable, exams.size());
 
-        when(examRepository.findAll()).thenReturn(exams);
+        when(examRepository.findAll(pageable)).thenReturn(examPage);
         when(examMapper.toResponseDTO(any(Exam.class))).thenReturn(new ExamResponseDTO());
 
-        List<ExamResponseDTO> responseDTOs = examService.listExams(null);
+        Page<ExamResponseDTO> responseDTOs = examService.listExams(null, pageable);
 
         assertNotNull(responseDTOs);
-        assertEquals(2, responseDTOs.size());
+        assertEquals(2, responseDTOs.getContent().size());
     }
 
     @Test
     void listExams_ByName_Success() {
         String name = "Blood Test";
+        Pageable pageable = PageRequest.of(0, 10);
         List<Exam> exams = List.of(new Exam(), new Exam());
+        Page<Exam> examPage = new PageImpl<>(exams, pageable, exams.size());
 
-        when(examRepository.findByName(name)).thenReturn(exams);
+        when(examRepository.findByName(name, pageable)).thenReturn(examPage);
         when(examMapper.toResponseDTO(any(Exam.class))).thenReturn(new ExamResponseDTO());
 
-        List<ExamResponseDTO> responseDTOs = examService.listExams(name);
+        Page<ExamResponseDTO> responseDTOs = examService.listExams(name, pageable);
 
         assertNotNull(responseDTOs);
-        assertEquals(2, responseDTOs.size());
+        assertEquals(2, responseDTOs.getContent().size());
     }
 
     @Test
@@ -229,9 +237,12 @@ class ExamServiceTest {
 
     @Test
     void listExams_NoExamsFound() {
-        when(examRepository.findAll()).thenReturn(List.of());
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Exam> examPage = new PageImpl<>(List.of(), pageable, 0);
 
-        List<ExamResponseDTO> responseDTOs = examService.listExams(null);
+        when(examRepository.findAll(pageable)).thenReturn(examPage);
+
+        Page<ExamResponseDTO> responseDTOs = examService.listExams(null, pageable);
 
         assertNotNull(responseDTOs);
         assertTrue(responseDTOs.isEmpty());

@@ -12,6 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -151,22 +155,27 @@ class AppointmentServiceTest {
 
     @Test
     void listAppointments_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
         List<Appointment> appointments = List.of(new Appointment(), new Appointment());
+        Page<Appointment> appointmentPage = new PageImpl<>(appointments, pageable, appointments.size());
 
-        when(appointmentRepository.findAll()).thenReturn(appointments);
+        when(appointmentRepository.findAll(pageable)).thenReturn(appointmentPage);
         when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
 
-        List<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments();
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(pageable);
 
         assertNotNull(responseDTOs);
-        assertEquals(2, responseDTOs.size());
+        assertEquals(2, responseDTOs.getTotalElements());
     }
 
     @Test
     void listAppointments_NoAppointmentsFound() {
-        when(appointmentRepository.findAll()).thenReturn(List.of());
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Appointment> appointmentPage = new PageImpl<>(List.of(), pageable, 0);
 
-        List<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments();
+        when(appointmentRepository.findAll(pageable)).thenReturn(appointmentPage);
+
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(pageable);
 
         assertNotNull(responseDTOs);
         assertTrue(responseDTOs.isEmpty());

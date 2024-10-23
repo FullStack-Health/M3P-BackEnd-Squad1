@@ -234,6 +234,6 @@ public class ExamControllerIntegrationTest {
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Exames encontrados com sucesso"))
-                .andExpect(jsonPath("$.exams[0].name").value(examRequestDTO.getName()));
+                .andExpect(jsonPath("$.exams.content[0].name").value(examRequestDTO.getName()));
     }
 }

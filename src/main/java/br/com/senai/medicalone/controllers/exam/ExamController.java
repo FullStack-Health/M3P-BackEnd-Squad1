@@ -9,11 +9,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -88,8 +90,12 @@ public class ExamController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exames encontrados com sucesso\", \"exams\": [{\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}]}")))
     })
-    public ResponseEntity<Map<String, Object>> listExams(@RequestParam(required = false) String name) {
-        List<ExamResponseDTO> exams = examService.listExams(name);
-        return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", exams), HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> listExams(
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ExamResponseDTO> responseDTOs = examService.listExams(name, pageable);
+        return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", responseDTOs), HttpStatus.OK);
     }
 }
