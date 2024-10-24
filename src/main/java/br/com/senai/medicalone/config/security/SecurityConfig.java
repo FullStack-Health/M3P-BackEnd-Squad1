@@ -4,6 +4,7 @@ import br.com.senai.medicalone.services.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -40,33 +41,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Público
                         .requestMatchers("/api/usuarios/login").permitAll()
-                        .requestMatchers("/api/usuarios/email/{email}/redefinir-senha").permitAll()
-                        .requestMatchers("/api/usuarios/pre-registro").permitAll()
+                        .requestMatchers("/api/usuarios").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/exames/{id}").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/webjars/**", "/swagger-resources/**").permitAll()
-
-                        // ADMIN
-                        .requestMatchers("/**").hasRole("ADMIN")
-
-                        // MEDICO
-                        .requestMatchers("/api/dashboard").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes/**").hasRole("MEDICO")
-                        .requestMatchers("/api/consultas").hasRole("MEDICO")
-                        .requestMatchers("/api/consultas/**").hasRole("MEDICO")
-                        .requestMatchers("/api/exames").hasRole("MEDICO")
-                        .requestMatchers("/api/exames/**").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes/prontuarios").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes/{id}/prontuarios").hasRole("MEDICO")
-
-                        // PACIENTE
-                        .requestMatchers("/api/pacientes/{id}").access(customAuthorizationManager)
-                        .requestMatchers("/api/consultas").access(customAuthorizationManager)
-                        .requestMatchers("/api/consultas/{id}").access(customAuthorizationManager)
-                        .requestMatchers("/api/exames").access(customAuthorizationManager)
-                        .requestMatchers("/api/exames/{id}").access(customAuthorizationManager)
-
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
