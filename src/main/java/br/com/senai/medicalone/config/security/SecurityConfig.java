@@ -26,15 +26,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtExceptionFilter jwtExceptionFilter;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
-    private final CustomAuthorizationManager customAuthorizationManager;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, JwtExceptionFilter jwtExceptionFilter,
-                          UserDetailsServiceImpl userDetailsServiceImpl, CustomAuthorizationManager customAuthorizationManager) {
+                          UserDetailsServiceImpl userDetailsServiceImpl) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtExceptionFilter = jwtExceptionFilter;
         this.userDetailsServiceImpl = userDetailsServiceImpl;
-        this.customAuthorizationManager = customAuthorizationManager;
     }
 
     @Bean
@@ -43,7 +41,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/usuarios/login").permitAll()
                         .requestMatchers("/api/usuarios").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/exames/{id}").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
+                        .requestMatchers(HttpMethod.GET,"/api/exames/{patientId}/exames").hasAnyRole("PACIENTE","ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/webjars/**", "/swagger-resources/**").permitAll()
                         .anyRequest().authenticated()
                 )
