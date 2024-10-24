@@ -101,4 +101,19 @@ public class AppointmentController {
         Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(pageable);
         return new ResponseEntity<>(Map.of("message", "Consultas encontradas com sucesso", "appointments", responseDTOs), HttpStatus.OK);
     }
+
+    @GetMapping("/{patientId}/consultas")
+    @Operation(summary = "Listar consultas por ID do paciente", description = "Endpoint para listar consultas por ID do paciente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consultas encontradas com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consultas encontradas com sucesso\", \"appointments\": [{\"id\": 1, \"date\": \"2023-10-01\", \"patientId\": 123}]}"))),
+            @ApiResponse(responseCode = "404", description = "Consultas não encontradas", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consultas não encontradas\"}")))
+    })
+    public ResponseEntity<Map<String, Object>> getAppointmentsByPatientId(@PathVariable Long patientId) {
+        try {
+            List<AppointmentResponseDTO> appointments = appointmentService.getAppointmentsByPatientId(patientId);
+            return new ResponseEntity<>(Map.of("message", "Consultas encontradas com sucesso", "appointments", appointments), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Consultas não encontradas"), HttpStatus.NOT_FOUND);
+        }
+    }
 }

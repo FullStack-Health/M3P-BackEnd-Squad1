@@ -132,6 +132,10 @@ public class ExamService {
         return exams.map(examMapper::toResponseDTO);
     }
 
+    @Operation(summary = "Lista exames por ID do paciente", description = "Método para listar exames por ID do paciente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso")
+    })
     public List<ExamResponseDTO> getExamsByPatientId(Long patientId) {
         List<Exam> exams = examRepository.findByPatientId(patientId);
         return exams.stream().map(examMapper::toResponseDTO).collect(Collectors.toList());

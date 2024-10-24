@@ -117,7 +117,10 @@ public class AppointmentService {
         Page<Appointment> appointments = appointmentRepository.findAll(pageable);
         return appointments.map(appointmentMapper::toResponseDTO);
     }
-
+    @Operation(summary = "Obter consultas por ID do paciente", description = "Método para obter consultas pelo ID do paciente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Consultas encontradas com sucesso")
+    })
     public List<AppointmentResponseDTO> getAppointmentsByPatientId(Long patientId) {
         List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
         return appointments.stream().map(appointmentMapper::toResponseDTO).collect(Collectors.toList());

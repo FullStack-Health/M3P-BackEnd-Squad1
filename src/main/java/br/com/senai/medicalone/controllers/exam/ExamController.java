@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -100,5 +101,20 @@ public class ExamController {
         Pageable pageable = PageRequest.of(page, size);
         Page<ExamResponseDTO> responseDTOs = examService.listExams(name, pageable);
         return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", responseDTOs), HttpStatus.OK);
+    }
+
+    @GetMapping("/{patientId}/exames")
+    @Operation(summary = "Listar exames por ID do paciente", description = "Endpoint para listar exames por ID do paciente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exames encontrados com sucesso\", \"exams\": [{\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}]}"))),
+            @ApiResponse(responseCode = "404", description = "Exames não encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exames não encontrados\"}")))
+    })
+    public ResponseEntity<Map<String, Object>> getExamsByPatientId(@PathVariable Long patientId) {
+        try {
+            List<ExamResponseDTO> exams = examService.getExamsByPatientId(patientId);
+            return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", exams), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Exames não encontrados"), HttpStatus.NOT_FOUND);
+        }
     }
 }
