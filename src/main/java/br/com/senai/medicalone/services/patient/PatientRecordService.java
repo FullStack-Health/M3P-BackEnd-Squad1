@@ -1,5 +1,6 @@
 package br.com.senai.medicalone.services.patient;
 
+import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
 import br.com.senai.medicalone.dtos.patient.PatientRecordDTO;
 import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
@@ -42,8 +43,8 @@ public class PatientRecordService {
     public PatientRecordDTO getPatientRecord(Long patientId) {
         var patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new PatientNotFoundException("Paciente não encontrado com ID: " + patientId));
-        var exams = examService.getExamsByPatientId(patientId);
-        var appointments = appointmentService.getAppointmentsByPatientId(patientId);
+        var exams = examService.getExamsByPatientId(patientId, Pageable.unpaged()).getContent();
+        var appointments = appointmentService.getAppointmentsByPatientId(patientId, Pageable.unpaged()).getContent();
         return patientRecordMapper.toDTO(patient, exams, appointments);
     }
 
@@ -55,8 +56,8 @@ public class PatientRecordService {
         Page<Patient> patients = patientRepository.findAll(pageable);
         List<PatientRecordDTO> records = patients.stream()
                 .map(patient -> {
-                    var exams = examService.getExamsByPatientId(patient.getId());
-                    var appointments = appointmentService.getAppointmentsByPatientId(patient.getId());
+                    var exams = examService.getExamsByPatientId(patient.getId(), Pageable.unpaged()).getContent();
+                    var appointments = appointmentService.getAppointmentsByPatientId(patient.getId(), Pageable.unpaged()).getContent();
                     return patientRecordMapper.toDTO(patient, exams, appointments);
                 })
                 .collect(Collectors.toList());

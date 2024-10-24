@@ -122,9 +122,11 @@ public class ExamService {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exames listados com sucesso")
     })
-    public Page<ExamResponseDTO> listExams(String name, Pageable pageable) {
+    public Page<ExamResponseDTO> listExams(String name, Long patientId, Pageable pageable) {
         Page<Exam> exams;
-        if (name != null && !name.isEmpty()) {
+        if (patientId != null) {
+            exams = examRepository.findByPatientId(patientId, pageable);
+        } else if (name != null && !name.isEmpty()) {
             exams = examRepository.findByName(name, pageable);
         } else {
             exams = examRepository.findAll(pageable);
@@ -132,8 +134,13 @@ public class ExamService {
         return exams.map(examMapper::toResponseDTO);
     }
 
-    public List<ExamResponseDTO> getExamsByPatientId(Long patientId) {
-        List<Exam> exams = examRepository.findByPatientId(patientId);
-        return exams.stream().map(examMapper::toResponseDTO).collect(Collectors.toList());
+    @Operation(summary = "Lista exames por ID do paciente", description = "Método para listar exames por ID do paciente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso")
+    })
+    public Page<ExamResponseDTO> getExamsByPatientId(Long patientId, Pageable pageable) {
+        Page<Exam> exams = examRepository.findByPatientId(patientId, pageable);
+        return exams.map(examMapper::toResponseDTO);
     }
+
 }

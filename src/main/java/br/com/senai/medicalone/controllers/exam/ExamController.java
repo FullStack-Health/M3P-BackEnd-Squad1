@@ -2,7 +2,10 @@ package br.com.senai.medicalone.controllers.exam;
 
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
+import br.com.senai.medicalone.exceptions.customexceptions.ExamNotFoundException;
+import br.com.senai.medicalone.services.AuthService;
 import br.com.senai.medicalone.services.exam.ExamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,8 +18,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,14 +53,28 @@ public class ExamController {
     @Operation(summary = "Obter exame por ID", description = "Endpoint para obter um exame pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exame encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame encontrado com sucesso\", \"exam\": {\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}}"))),
-            @ApiResponse(responseCode = "404", description = "Exame não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame não encontrado\"}")))
+            @ApiResponse(responseCode = "404", description = "Exame não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame não encontrado\"}"))),
+            @ApiResponse(responseCode = "403", description = "Exame não associado ao usuário autenticado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exame não associado ao usuário autenticado\"}")))
     })
     public ResponseEntity<Map<String, Object>> getExamById(@PathVariable Long id) {
         try {
-            ExamResponseDTO exam = examService.getExamById(id);
-            return new ResponseEntity<>(Map.of("message", "Exame encontrado com sucesso", "exam", exam), HttpStatus.OK);
-        } catch (Exception e) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof User) {
+                User user = (User) authentication.getPrincipal();
+                if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"))) {
+                    Long patientId = user.getPatientId();
+                    ExamResponseDTO exam = examService.getExamById(id);
+                    if (!exam.getPatientId().equals(patientId)) {
+                        return new ResponseEntity<>(Map.of("message", "Exame não associado ao usuário autenticado"), HttpStatus.FORBIDDEN);
+                    }
+                    return new ResponseEntity<>(Map.of("message", "Exame encontrado com sucesso", "exam", exam), HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<>(Map.of("message", "Usuário não autenticado"), HttpStatus.UNAUTHORIZED);
+        } catch (ExamNotFoundException e) {
             return new ResponseEntity<>(Map.of("message", "Exame não encontrado"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Erro ao buscar exame"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -98,7 +118,19 @@ public class ExamController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ExamResponseDTO> responseDTOs = examService.listExams(name, pageable);
+        Long patientId = null;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            User user = (User) authentication.getPrincipal();
+            if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"))) {
+                patientId = user.getPatientId();
+            }
+        }
+
+        Page<ExamResponseDTO> responseDTOs = examService.listExams(name, patientId, pageable);
         return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", responseDTOs), HttpStatus.OK);
     }
+
+
 }

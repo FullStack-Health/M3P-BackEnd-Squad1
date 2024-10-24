@@ -15,5 +15,5 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
     List<Exam> findByExamDate(LocalDate examDate);
     List<Exam> findByType(String type);
     List<Exam> findByLaboratory(String laboratory);
-    List<Exam> findByPatientId(Long patientId);
+    Page<Exam> findByPatientId(Long patientId, Pageable pageable);
 }

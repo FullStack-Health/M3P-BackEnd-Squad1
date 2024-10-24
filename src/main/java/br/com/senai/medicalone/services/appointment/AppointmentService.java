@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,7 +57,14 @@ public class AppointmentService {
             throw new BadRequestException("Paciente não encontrado");
         }
 
+        Optional<Appointment> existingAppointment = appointmentRepository.findByPatientIdAndAppointmentDateAndAppointmentTime(
+                dto.getPatientId(), dto.getAppointmentDate(), dto.getAppointmentTime());
+        if (existingAppointment.isPresent()) {
+            throw new BadRequestException("Já existe uma consulta para este paciente na mesma data e hora");
+        }
+
         Appointment appointment = appointmentMapper.toEntity(dto);
+        appointment.setId(null);
         appointment = appointmentRepository.save(appointment);
         return appointmentMapper.toResponseDTO(appointment);
     }
@@ -113,13 +121,18 @@ public class AppointmentService {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consultas listadas com sucesso")
     })
-    public Page<AppointmentResponseDTO> listAppointments(Pageable pageable) {
-        Page<Appointment> appointments = appointmentRepository.findAll(pageable);
+    public Page<AppointmentResponseDTO> listAppointments(String name, Long patientId, Pageable pageable) {
+        Page<Appointment> appointments;
+        if (patientId != null) {
+            appointments = appointmentRepository.findByPatientId(patientId, pageable);
+        } else {
+            appointments = appointmentRepository.findAll(pageable);
+        }
         return appointments.map(appointmentMapper::toResponseDTO);
     }
 
-    public List<AppointmentResponseDTO> getAppointmentsByPatientId(Long patientId) {
-        List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
-        return appointments.stream().map(appointmentMapper::toResponseDTO).collect(Collectors.toList());
+    public Page<AppointmentResponseDTO> getAppointmentsByPatientId(Long patientId, Pageable pageable) {
+        Page<Appointment> appointments = appointmentRepository.findByPatientId(patientId, pageable);
+        return appointments.map(appointmentMapper::toResponseDTO);
     }
 }

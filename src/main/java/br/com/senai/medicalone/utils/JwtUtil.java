@@ -69,6 +69,7 @@ public class JwtUtil {
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().getAuthority());
+        claims.put("patientId", user.getPatientId());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())
@@ -89,6 +90,11 @@ public class JwtUtil {
                 .signWith(SignatureAlgorithm.RS256, privateKey)
                 .compact();
     }
+
+    public Long getPatientIdFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("patientId", Long.class));
+    }
+
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String email = getEmailFromToken(token);
         final String role = getRoleFromToken(token);

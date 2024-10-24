@@ -4,6 +4,7 @@ import br.com.senai.medicalone.services.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -25,48 +26,53 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtExceptionFilter jwtExceptionFilter;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
-    private final CustomAuthorizationManager customAuthorizationManager;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, JwtExceptionFilter jwtExceptionFilter,
-                          UserDetailsServiceImpl userDetailsServiceImpl, CustomAuthorizationManager customAuthorizationManager) {
+                          UserDetailsServiceImpl userDetailsServiceImpl) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtExceptionFilter = jwtExceptionFilter;
         this.userDetailsServiceImpl = userDetailsServiceImpl;
-        this.customAuthorizationManager = customAuthorizationManager;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Público
+                        //publico
                         .requestMatchers("/api/usuarios/login").permitAll()
                         .requestMatchers("/api/usuarios/email/{email}/redefinir-senha").permitAll()
                         .requestMatchers("/api/usuarios/pre-registro").permitAll()
+
+                        //Prontuarios
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes/prontuarios").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes/{id}/prontuarios").hasAnyRole("ADMIN", "MEDICO")
+
+                        //exames
+                        .requestMatchers(HttpMethod.GET, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
+                        .requestMatchers(HttpMethod.POST, "/api/exames").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.PUT, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
+
+                        //consultas
+                        .requestMatchers(HttpMethod.GET, "/api/consultas/**").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
+                        .requestMatchers(HttpMethod.POST, "/api/consultas").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.PUT, "/api/consultas/**").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/consultas/**").hasAnyRole("ADMIN", "MEDICO")
+
+                        //dashboard
+                        .requestMatchers(HttpMethod.GET,"/api/dashboard").hasAnyRole("ADMIN", "MEDICO")
+
+                        //pacientes
+                        .requestMatchers(HttpMethod.POST, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
+                        .requestMatchers(HttpMethod.PUT, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
+
+
+                        //swagger
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/webjars/**", "/swagger-resources/**").permitAll()
-
-                        // ADMIN
-                        .requestMatchers("/**").hasRole("ADMIN")
-
-                        // MEDICO
-                        .requestMatchers("/api/dashboard").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes/**").hasRole("MEDICO")
-                        .requestMatchers("/api/consultas").hasRole("MEDICO")
-                        .requestMatchers("/api/consultas/**").hasRole("MEDICO")
-                        .requestMatchers("/api/exames").hasRole("MEDICO")
-                        .requestMatchers("/api/exames/**").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes/prontuarios").hasRole("MEDICO")
-                        .requestMatchers("/api/pacientes/{id}/prontuarios").hasRole("MEDICO")
-
-                        // PACIENTE
-                        .requestMatchers("/api/pacientes/{id}").access(customAuthorizationManager)
-                        .requestMatchers("/api/consultas").access(customAuthorizationManager)
-                        .requestMatchers("/api/consultas/{id}").access(customAuthorizationManager)
-                        .requestMatchers("/api/exames").access(customAuthorizationManager)
-                        .requestMatchers("/api/exames/{id}").access(customAuthorizationManager)
-
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
