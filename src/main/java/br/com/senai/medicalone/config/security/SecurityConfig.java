@@ -39,12 +39,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        //publico
                         .requestMatchers("/api/usuarios/login").permitAll()
                         .requestMatchers("/api/usuarios").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.GET,"/api/exames/{patientId}/exames").hasAnyRole("PACIENTE","ADMIN", "MEDICO")
+
+                        //exames
                         .requestMatchers(HttpMethod.GET, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
                                 .requestMatchers(HttpMethod.POST, "/api/exames").hasAnyRole("ADMIN", "MEDICO")
                                 .requestMatchers(HttpMethod.PUT, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
+                                .requestMatchers(HttpMethod.DELETE, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
+
+
+
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/webjars/**", "/swagger-resources/**").permitAll()
                         .anyRequest().authenticated()
                 )
