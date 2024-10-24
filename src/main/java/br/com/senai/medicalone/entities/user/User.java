@@ -73,6 +73,10 @@ public class User implements UserDetails {
     @Schema(description = "Role do usuário", example = "ADMIN")
     private RoleType role;
 
+    @Column(name = "patient_id")
+    @Schema(description = "ID do paciente associado", example = "1")
+    private Long patientId;
+
     @PrePersist
     @PreUpdate
     private void preProcess() {
