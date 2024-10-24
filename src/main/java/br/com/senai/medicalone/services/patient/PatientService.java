@@ -61,6 +61,7 @@ public class PatientService {
         }
 
         try {
+            // Criar a entidade Patient a partir do DTO
             Patient patient = patientMapper.toEntity(patientRequestDTO);
             patient.setPassword(passwordEncoder.encode(patient.getCpf()));
 
@@ -76,25 +77,25 @@ public class PatientService {
                 userRequestDTO.setCpf(patient.getCpf());
                 userRequestDTO.setPassword(patient.getCpf());
                 userRequestDTO.setRole(RoleType.PACIENTE);
+
                 UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
 
-                User newUser = new User();
-                newUser.setId(userResponseDTO.getId());
-                newUser.setName(userResponseDTO.getName());
-                newUser.setEmail(userResponseDTO.getEmail());
-                newUser.setBirthDate(userResponseDTO.getBirthDate());
-                newUser.setPhone(userResponseDTO.getPhone());
-                newUser.setCpf(userResponseDTO.getCpf());
-                newUser.setRole(userResponseDTO.getRole());
+                User newUser = userRepository.findById(userResponseDTO.getId()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
                 patient.setUser(newUser);
             }
 
             patient = patientRepository.save(patient);
+
+            User user = patient.getUser();
+            user.setPatientId(patient.getId());
+            userRepository.save(user);
+
             return patientMapper.toResponseDTO(patient);
         } catch (DataIntegrityViolationException ex) {
             throw new PatientAlreadyExistsException("Paciente já cadastrado");
         }
     }
+
 
     @Operation(summary = "Obter paciente pelo ID", description = "Método para obter um paciente pelo ID")
     @ApiResponses({

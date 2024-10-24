@@ -53,6 +53,7 @@ public class UserServiceTest {
     private UserService userService;
 
     private User user;
+    private PreRegisterUser preRegisterUser;
 
     @BeforeEach
     public void setUp() {
@@ -61,6 +62,12 @@ public class UserServiceTest {
         user.setEmail("test@example.com");
         user.setPassword(passwordEncoder.encode("password"));
         user.setRole(RoleType.ADMIN);
+
+        preRegisterUser = new PreRegisterUser();
+        preRegisterUser.setId(2L);
+        preRegisterUser.setEmail("pretest@example.com");
+        preRegisterUser.setPassword(passwordEncoder.encode("password"));
+        preRegisterUser.setRole(RoleType.ADMIN);
     }
 
     @Test
@@ -211,9 +218,23 @@ public class UserServiceTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
-        when(jwtUtil.generateToken(anyMap(), eq("test@example.com"))).thenReturn("token");
+        when(jwtUtil.generateToken(user)).thenReturn("token");
 
         String token = userService.loginUser("test@example.com", "password");
+        assertNotNull(token);
+        assertEquals("token", token);
+    }
+
+    @Test
+    public void testLoginUser_PreRegisterUser_Success() {
+        Authentication authentication = mock(Authentication.class);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(userRepository.findByEmail("pretest@example.com")).thenReturn(Optional.empty());
+        when(preRegisterUserRepository.findByEmail("pretest@example.com")).thenReturn(Optional.of(preRegisterUser));
+        when(jwtUtil.generateToken(preRegisterUser)).thenReturn("token");
+
+        String token = userService.loginUser("pretest@example.com", "password");
         assertNotNull(token);
         assertEquals("token", token);
     }

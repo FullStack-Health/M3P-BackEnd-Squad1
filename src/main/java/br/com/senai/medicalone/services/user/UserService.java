@@ -193,23 +193,13 @@ public class UserService {
             Optional<User> userOptional = userRepository.findByEmail(email);
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
-                Map<String, Object> claims = Map.of(
-                        "id", user.getId(),
-                        "email", user.getEmail(),
-                        "role", user.getRole().name()
-                );
-                return jwtUtil.generateToken(claims, email);
+                return jwtUtil.generateToken(user);
             }
 
             Optional<PreRegisterUser> preRegisterUserOptional = preRegisterUserRepository.findByEmail(email);
             if (preRegisterUserOptional.isPresent()) {
                 PreRegisterUser preRegisterUser = preRegisterUserOptional.get();
-                Map<String, Object> claims = Map.of(
-                        "id", preRegisterUser.getId(),
-                        "email", preRegisterUser.getEmail(),
-                        "role", preRegisterUser.getRole().name()
-                );
-                return jwtUtil.generateToken(claims, email);
+                return jwtUtil.generateToken(preRegisterUser);
             }
 
             throw new UserNotFoundException("Usuário não encontrado");
@@ -246,5 +236,13 @@ public class UserService {
         dto.setCpf(user.getCpf());
         dto.setRole(user.getRole());
         return dto;
+    }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByEmail(username);
     }
 }
