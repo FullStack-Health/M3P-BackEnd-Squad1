@@ -41,16 +41,37 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         //publico
                         .requestMatchers("/api/usuarios/login").permitAll()
-                        .requestMatchers("/api/usuarios").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios/email/{email}/redefinir-senha").permitAll()
+                        .requestMatchers("/api/usuarios/pre-registro").permitAll()
+
+                        //Prontuarios
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes/prontuarios").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes/{id}/prontuarios").hasAnyRole("ADMIN", "MEDICO")
 
                         //exames
                         .requestMatchers(HttpMethod.GET, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
-                                .requestMatchers(HttpMethod.POST, "/api/exames").hasAnyRole("ADMIN", "MEDICO")
-                                .requestMatchers(HttpMethod.PUT, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
-                                .requestMatchers(HttpMethod.DELETE, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.POST, "/api/exames").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.PUT, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO")
+
+                        //consultas
+                        .requestMatchers(HttpMethod.GET, "/api/consultas/**").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
+                        .requestMatchers(HttpMethod.POST, "/api/consultas").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.PUT, "/api/consultas/**").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/consultas/**").hasAnyRole("ADMIN", "MEDICO")
+
+                        //dashboard
+                        .requestMatchers(HttpMethod.GET,"/api/dashboard").hasAnyRole("ADMIN", "MEDICO")
+
+                        //pacientes
+                        .requestMatchers(HttpMethod.POST, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
+                        .requestMatchers(HttpMethod.PUT, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
 
 
-
+                        //swagger
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/webjars/**", "/swagger-resources/**").permitAll()
                         .anyRequest().authenticated()
                 )

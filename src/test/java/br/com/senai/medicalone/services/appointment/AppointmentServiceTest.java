@@ -3,7 +3,6 @@ package br.com.senai.medicalone.services.appointment;
 import br.com.senai.medicalone.dtos.appointment.AppointmentRequestDTO;
 import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
 import br.com.senai.medicalone.entities.appointment.Appointment;
-import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundException;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.mappers.appointment.AppointmentMapper;
@@ -186,7 +185,7 @@ class AppointmentServiceTest {
         when(appointmentRepository.findAll(pageable)).thenReturn(appointmentPage);
         when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
 
-        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(pageable);
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(null, null, pageable);
 
         assertNotNull(responseDTOs);
         assertEquals(2, responseDTOs.getTotalElements());
@@ -199,9 +198,25 @@ class AppointmentServiceTest {
 
         when(appointmentRepository.findAll(pageable)).thenReturn(appointmentPage);
 
-        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(pageable);
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(null, null, pageable);
 
         assertNotNull(responseDTOs);
         assertTrue(responseDTOs.isEmpty());
+    }
+
+    @Test
+    void getAppointmentsByPatientId_Success() {
+        Long patientId = 1L;
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Appointment> appointments = List.of(new Appointment(), new Appointment());
+        Page<Appointment> appointmentPage = new PageImpl<>(appointments, pageable, appointments.size());
+
+        when(appointmentRepository.findByPatientId(patientId, pageable)).thenReturn(appointmentPage);
+        when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
+
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.getAppointmentsByPatientId(patientId, pageable);
+
+        assertNotNull(responseDTOs);
+        assertEquals(2, responseDTOs.getTotalElements());
     }
 }
