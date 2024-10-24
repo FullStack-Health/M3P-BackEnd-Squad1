@@ -2,6 +2,7 @@ package br.com.senai.medicalone.controllers.exam;
 
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.services.AuthService;
 import br.com.senai.medicalone.services.exam.ExamService;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -100,32 +103,19 @@ public class ExamController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ExamResponseDTO> responseDTOs = examService.listExams(name, pageable);
+        Long patientId = null;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            User user = (User) authentication.getPrincipal();
+            if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"))) {
+                patientId = user.getPatientId();
+            }
+        }
+
+        Page<ExamResponseDTO> responseDTOs = examService.listExams(name, patientId, pageable);
         return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", responseDTOs), HttpStatus.OK);
     }
 
-    @GetMapping("/{patientId}/exames")
-    @Operation(summary = "Listar exames por ID do paciente", description = "Endpoint para listar exames por ID do paciente")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exames encontrados com sucesso\", \"exams\": [{\"id\": 1, \"name\": \"Exame de Sangue\", \"description\": \"Descrição do exame\"}]}"))),
-            @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Acesso negado\"}"))),
-            @ApiResponse(responseCode = "404", description = "Exames não encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Exames não encontrados\"}")))
-    })
-    public ResponseEntity<Map<String, Object>> getExamsByPatientId(@PathVariable Long patientId) {
-        Long authenticatedPatientId = AuthService.getAuthenticatedPatientId();
-
-        if (!authenticatedPatientId.equals(patientId)) {
-            return new ResponseEntity<>(Map.of("message", "Acesso negado"), HttpStatus.FORBIDDEN);
-        }
-        try {
-            List<ExamResponseDTO> exams = examService.getExamsByPatientId(patientId);
-            if (exams.isEmpty()) {
-                return new ResponseEntity<>(Map.of("message", "Exames não encontrados"), HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", exams), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("message", "Erro ao buscar exames"), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
+   
 }

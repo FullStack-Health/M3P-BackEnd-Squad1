@@ -42,9 +42,9 @@ public class PatientRecordService {
     public PatientRecordDTO getPatientRecord(Long patientId) {
         var patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new PatientNotFoundException("Paciente não encontrado com ID: " + patientId));
-        var exams = examService.getExamsByPatientId(patientId);
+        var exams = examService.getExamsByPatientId(patientId, Pageable.unpaged());
         var appointments = appointmentService.getAppointmentsByPatientId(patientId);
-        return patientRecordMapper.toDTO(patient, exams, appointments);
+        return patientRecordMapper.toDTO(patient, exams.getContent(), appointments);
     }
 
     @Operation(summary = "Obter todos os prontuários de pacientes", description = "Método para obter todos os prontuários de pacientes com paginação")
@@ -55,11 +55,12 @@ public class PatientRecordService {
         Page<Patient> patients = patientRepository.findAll(pageable);
         List<PatientRecordDTO> records = patients.stream()
                 .map(patient -> {
-                    var exams = examService.getExamsByPatientId(patient.getId());
+                    var exams = examService.getExamsByPatientId(patient.getId(), Pageable.unpaged());
                     var appointments = appointmentService.getAppointmentsByPatientId(patient.getId());
-                    return patientRecordMapper.toDTO(patient, exams, appointments);
+                    return patientRecordMapper.toDTO(patient, exams.getContent(), appointments);
                 })
                 .collect(Collectors.toList());
         return new PageImpl<>(records, pageable, patients.getTotalElements());
     }
+
 }
