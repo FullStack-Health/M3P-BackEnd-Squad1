@@ -68,6 +68,7 @@ class ExamServiceTest {
         exam.setPatient(patient);
 
         when(patientRepository.findById(anyLong())).thenReturn(Optional.of(patient));
+        when(examRepository.existsByPatientIdAndExamDateAndExamTime(anyLong(), any(LocalDate.class), any(LocalTime.class))).thenReturn(false);
         when(examMapper.toEntity(any(ExamRequestDTO.class))).thenReturn(exam);
         when(examRepository.save(any(Exam.class))).thenReturn(exam);
         when(examMapper.toResponseDTO(any(Exam.class))).thenReturn(new ExamResponseDTO());
@@ -86,6 +87,24 @@ class ExamServiceTest {
         when(patientRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(PatientNotFoundException.class, () -> examService.createExam(requestDTO));
+    }
+
+    @Test
+    void createExam_ExamAlreadyExists() {
+        ExamRequestDTO requestDTO = new ExamRequestDTO();
+        requestDTO.setPatientId(1L);
+        requestDTO.setName("Blood Test");
+        requestDTO.setExamDate(LocalDate.now());
+        requestDTO.setExamTime(LocalTime.now());
+        requestDTO.setType("Routine");
+
+        Patient patient = new Patient();
+        patient.setId(1L);
+
+        when(patientRepository.findById(anyLong())).thenReturn(Optional.of(patient));
+        when(examRepository.existsByPatientIdAndExamDateAndExamTime(anyLong(), any(LocalDate.class), any(LocalTime.class))).thenReturn(true);
+
+        assertThrows(BadRequestException.class, () -> examService.createExam(requestDTO));
     }
 
     @Test
