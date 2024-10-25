@@ -22,6 +22,7 @@ public class Appointment {
     @Schema(description = "ID da consulta", example = "1")
     private Long id;
 
+    @NotNull
     @NotBlank
     @Size(min = 8, max = 64)
     @Column(nullable = false, length = 64)

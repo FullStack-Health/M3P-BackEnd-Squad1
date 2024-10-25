@@ -89,6 +89,22 @@ public class AppointmentService {
     })
     @Transactional
     public AppointmentResponseDTO updateAppointment(Long id, AppointmentRequestDTO dto) {
+        if (dto.getAppointmentReason() == null || dto.getAppointmentReason().isEmpty()) {
+            throw new BadRequestException("Motivo da consulta é obrigatório");
+        }
+        if (dto.getAppointmentDate() == null) {
+            throw new BadRequestException("Data da consulta é obrigatória");
+        }
+        if (dto.getAppointmentTime() == null) {
+            throw new BadRequestException("Hora da consulta é obrigatória");
+        }
+        if (dto.getProblemDescription() == null || dto.getProblemDescription().isEmpty()) {
+            throw new BadRequestException("Descrição do problema é obrigatória");
+        }
+        if (dto.getPatientId() == null || !patientRepository.existsById(dto.getPatientId())) {
+            throw new BadRequestException("Paciente não encontrado");
+        }
+
         Optional<Appointment> appointmentOptional = appointmentRepository.findById(id);
         if (appointmentOptional.isEmpty()) {
             throw new AppointmentNotFoundException("Consulta não encontrada");

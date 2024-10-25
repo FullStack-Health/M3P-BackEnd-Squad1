@@ -64,11 +64,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/dashboard").hasAnyRole("ADMIN", "MEDICO")
 
                         //pacientes
-                        .requestMatchers(HttpMethod.POST, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
                         .requestMatchers(HttpMethod.GET, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
+                        .requestMatchers(HttpMethod.POST, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
                         .requestMatchers(HttpMethod.PUT, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO")
                         .requestMatchers(HttpMethod.DELETE, "/api/pacientes/{id}").hasAnyRole("ADMIN", "MEDICO")
-                        .requestMatchers(HttpMethod.GET, "/api/pacientes").hasAnyRole("ADMIN", "MEDICO")
+
 
 
                         //swagger
