@@ -34,12 +34,12 @@ public class ExamService {
 
     @Autowired
     private PatientRepository patientRepository;
-
     @Operation(summary = "Cria um novo exame", description = "Método para criar um novo exame")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Exame criado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
     })
+
     @Transactional
     public ExamResponseDTO createExam(ExamRequestDTO dto) {
         Optional<Patient> patientOptional = patientRepository.findById(dto.getPatientId());
@@ -57,6 +57,12 @@ public class ExamService {
         }
         if (dto.getType() == null || dto.getType().isEmpty()) {
             throw new BadRequestException("Tipo do exame é obrigatório");
+        }
+
+         boolean exists = examRepository.existsByPatientIdAndExamDateAndExamTime(
+                dto.getPatientId(), dto.getExamDate(), dto.getExamTime());
+        if (exists) {
+            throw new BadRequestException("Já existe um exame para este paciente na mesma data e hora");
         }
 
         Exam exam = examMapper.toEntity(dto);
