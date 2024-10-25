@@ -1,0 +1,29 @@
+# Ignorar diretórios de build e dependências
+target/
+**/target/
+
+# Ignorar arquivos de controle de versão
+.git/
+.gitignore
+
+# Ignorar arquivos específicos do ambiente
+.env
+*.env
+
+# Ignorar arquivos de configuração de IDEs
+*.iml
+.idea/
+*.vscode/
+*.class
+*.log
+
+# Ignorar arquivos temporários e de sistema
+*.tmp
+*.swp
+*.DS_Store
+*.bak
+Thumbs.db
+
+#Outros
+*_old
+/docker

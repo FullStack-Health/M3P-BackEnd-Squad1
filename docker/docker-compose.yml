@@ -1,0 +1,54 @@
+###
+# docker-compose: MedicalOne
+# cmd:
+# cd docker
+# docker-compose up
+#
+name: medicalone
+
+services:
+  database:
+    container_name: db-medicalone-postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=1q2w3E@!
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=dbMedicalOne
+    networks:
+      - fmt-medicalone-network
+    ports:
+      - "5455:5432"
+    volumes:
+      - pgdataMedicalOne:/var/lib/postgresql/data
+
+  app:
+    container_name: app-medicalone
+    image: ricardoviesant/medicalone:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/dbMedicalOne  # Usando o nome do serviço de banco de dados
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=1q2w3E@!
+    networks:
+      - fmt-medicalone-network
+    depends_on:
+      - database
+
+  pgadmin:
+    container_name: pgadmin-medicalone
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "15432:80"
+    networks:
+      - fmt-medicalone-network
+
+networks:
+  fmt-medicalone-network:
+    driver: bridge
+
+volumes:
+  pgdataMedicalOne:
