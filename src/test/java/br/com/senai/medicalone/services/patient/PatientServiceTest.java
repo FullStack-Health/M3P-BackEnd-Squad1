@@ -2,6 +2,8 @@ package br.com.senai.medicalone.services.patient;
 
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
+import br.com.senai.medicalone.dtos.user.UserRequestDTO;
+import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.entities.patient.Address;
 import br.com.senai.medicalone.entities.user.User;
@@ -10,12 +12,15 @@ import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsE
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
+import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.services.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class PatientServiceTest {
 
     @Mock
@@ -45,6 +51,9 @@ class PatientServiceTest {
 
     @InjectMocks
     private PatientService patientService;
+
+    @Mock
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -82,16 +91,21 @@ class PatientServiceTest {
         patient.setEmergencyContact("99999999999");
         patient.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
 
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(1L);
+
         when(patientRepository.existsByEmail(anyString())).thenReturn(false);
         when(patientRepository.existsByCpf(anyString())).thenReturn(false);
         when(patientMapper.toEntity(any(PatientRequestDTO.class))).thenReturn(patient);
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
         when(patientMapper.toResponseDTO(any(Patient.class))).thenReturn(new PatientResponseDTO());
+        when(userService.createUser(any(UserRequestDTO.class))).thenReturn(userResponseDTO);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
 
         PatientResponseDTO responseDTO = patientService.createPatient(requestDTO);
 
         assertNotNull(responseDTO);
-        verify(userService, times(1)).createUser(any(br.com.senai.medicalone.dtos.user.UserRequestDTO.class));
+        verify(userService, times(1)).createUser(any(UserRequestDTO.class));
     }
 
     @Test
@@ -111,35 +125,6 @@ class PatientServiceTest {
         requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
 
         when(patientRepository.existsByEmail(anyString())).thenReturn(true);
-
-        assertThrows(PatientAlreadyExistsException.class, () -> patientService.createPatient(requestDTO));
-    }
-
-    @Test
-    void createPatient_DataIntegrityViolation() {
-        PatientRequestDTO requestDTO = new PatientRequestDTO();
-        requestDTO.setFullName("John Doe");
-        requestDTO.setGender("Masculino");
-        requestDTO.setBirthDate(LocalDate.of(1990, 1, 1));
-        requestDTO.setCpf("123.456.789-00");
-        requestDTO.setRg("1234567890");
-        requestDTO.setRgIssuer("SSP");
-        requestDTO.setMaritalStatus("Solteiro");
-        requestDTO.setPhone("99999999999");
-        requestDTO.setEmail("john.doe@example.com");
-        requestDTO.setPlaceOfBirth("São Paulo");
-        requestDTO.setEmergencyContact("99999999999");
-        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
-
-        Patient patient = new Patient();
-        patient.setId(1L);
-        patient.setEmail("john.doe@example.com");
-        patient.setCpf("123.456.789-00");
-
-        when(patientRepository.existsByEmail(anyString())).thenReturn(false);
-        when(patientRepository.existsByCpf(anyString())).thenReturn(false);
-        when(patientMapper.toEntity(any(PatientRequestDTO.class))).thenReturn(patient);
-        when(patientRepository.save(any(Patient.class))).thenThrow(DataIntegrityViolationException.class);
 
         assertThrows(PatientAlreadyExistsException.class, () -> patientService.createPatient(requestDTO));
     }

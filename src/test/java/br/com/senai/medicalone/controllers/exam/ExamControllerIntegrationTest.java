@@ -57,8 +57,9 @@ public class ExamControllerIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        userRepository.deleteAll();
         patientRepository.deleteAll();
+        userRepository.deleteAll();
+
 
         User user = new User();
         user.setEmail("admin@example.com");

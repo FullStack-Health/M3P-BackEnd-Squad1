@@ -103,4 +103,13 @@ public class PatientRepositoryTest {
         assertThat(patients).isNotEmpty();
         assertThat(patients.get(0).getPhone()).isEqualTo("99999999999");
     }
+
+    @Test
+    public void testFindByCpf() {
+        patient.setCpf(patient.cleanString(patient.getCpf()));
+        patientRepository.save(patient);
+        Patient foundPatient = patientRepository.findByCpf("12345678900");
+        assertThat(foundPatient).isNotNull();
+        assertThat(foundPatient.getCpf()).isEqualTo("12345678900");
+    }
 }

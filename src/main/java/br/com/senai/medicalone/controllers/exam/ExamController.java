@@ -5,7 +5,6 @@ import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.ExamNotFoundException;
-import br.com.senai.medicalone.services.AuthService;
 import br.com.senai.medicalone.services.exam.ExamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,7 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -61,14 +59,14 @@ public class ExamController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.getPrincipal() instanceof User) {
                 User user = (User) authentication.getPrincipal();
+                ExamResponseDTO exam = examService.getExamById(id);
                 if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"))) {
                     Long patientId = user.getPatientId();
-                    ExamResponseDTO exam = examService.getExamById(id);
                     if (!exam.getPatientId().equals(patientId)) {
                         return new ResponseEntity<>(Map.of("message", "Exame não associado ao usuário autenticado"), HttpStatus.FORBIDDEN);
                     }
-                    return new ResponseEntity<>(Map.of("message", "Exame encontrado com sucesso", "exam", exam), HttpStatus.OK);
                 }
+                return new ResponseEntity<>(Map.of("message", "Exame encontrado com sucesso", "exam", exam), HttpStatus.OK);
             }
             return new ResponseEntity<>(Map.of("message", "Usuário não autenticado"), HttpStatus.UNAUTHORIZED);
         } catch (ExamNotFoundException e) {

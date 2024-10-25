@@ -2,6 +2,7 @@ package br.com.senai.medicalone.controllers.user;
 
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
+import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,10 +35,14 @@ public class UserControllerIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private PatientRepository patientRepository;
+
+    @Autowired
     private PreRegisterUserRepository preRegisterUserRepository;
 
     @BeforeEach
     public void setup() {
+        patientRepository.deleteAll();
         userRepository.deleteAll();
         preRegisterUserRepository.deleteAll();
     }

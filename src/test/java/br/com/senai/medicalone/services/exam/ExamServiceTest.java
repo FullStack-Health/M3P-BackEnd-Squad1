@@ -196,6 +196,7 @@ class ExamServiceTest {
         assertNotNull(responseDTOs);
         assertEquals(2, responseDTOs.getContent().size());
     }
+
     @Test
     void createExam_MissingName_ShouldThrowException() {
         ExamRequestDTO requestDTO = new ExamRequestDTO();
@@ -234,16 +235,16 @@ class ExamServiceTest {
         assertThrows(BadRequestException.class, () -> examService.updateExam(id, requestDTO));
     }
 
-//    @Test
-//    void listExams_NoExamsFound() {
-//        Pageable pageable = PageRequest.of(0, 10);
-//        Page<Exam> examPage = new PageImpl<>(List.of(), pageable, 0);
-//
-//        when(examRepository.findAll(pageable)).thenReturn(examPage);
-//
-//        Page<ExamResponseDTO> responseDTOs = examService.listExams(null, pageable);
-//
-//        assertNotNull(responseDTOs);
-//        assertTrue(responseDTOs.isEmpty());
-//    }
+    @Test
+    void listExams_NoExamsFound() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Exam> examPage = new PageImpl<>(List.of(), pageable, 0);
+
+        when(examRepository.findAll(pageable)).thenReturn(examPage);
+
+        Page<ExamResponseDTO> responseDTOs = examService.listExams(null, null, pageable);
+
+        assertNotNull(responseDTOs);
+        assertTrue(responseDTOs.isEmpty());
+    }
 }

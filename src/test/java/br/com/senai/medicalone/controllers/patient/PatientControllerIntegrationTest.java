@@ -56,9 +56,14 @@ public class PatientControllerIntegrationTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        userRepository.deleteAll();
         patientRepository.deleteAll();
+        userRepository.deleteAll();
 
+        createUserAndAuthenticate();
+        patientRequestDTO = createMockPatient();
+    }
+
+    private void createUserAndAuthenticate() throws Exception {
         User user = new User();
         user.setEmail("admin@example.com");
         user.setPassword(passwordEncoder.encode("adminpassword"));
@@ -79,8 +84,6 @@ public class PatientControllerIntegrationTest {
                 .getContentAsString();
 
         jwtToken = objectMapper.readTree(response).get("token").asText();
-
-        patientRequestDTO = createMockPatient();
     }
 
     private PatientRequestDTO createMockPatient() {
@@ -138,6 +141,18 @@ public class PatientControllerIntegrationTest {
                 .andExpect(jsonPath("$.patient.address.complement").value("Apto 101"))
                 .andExpect(jsonPath("$.patient.address.neighborhood").value("Centro"))
                 .andExpect(jsonPath("$.patient.address.referencePoint").value("Próximo ao mercado"));
+    }
+
+    @Test
+    public void testCreatePatient_Conflict() throws Exception {
+        patientService.createPatient(patientRequestDTO);
+
+        mockMvc.perform(post("/api/pacientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patientRequestDTO))
+                        .header("Authorization", "Bearer " + jwtToken))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Paciente já cadastrado"));
     }
 
     @Test
