@@ -2,15 +2,25 @@ package br.com.senai.medicalone.controllers.appointment;
 
 import br.com.senai.medicalone.dtos.appointment.AppointmentRequestDTO;
 import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
+import br.com.senai.medicalone.entities.user.User;
+import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundException;
+import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.services.appointment.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +43,8 @@ public class AppointmentController {
         try {
             AppointmentResponseDTO createdAppointment = appointmentService.createAppointment(dto);
             return new ResponseEntity<>(Map.of("message", "Consulta criada com sucesso", "appointment", createdAppointment), HttpStatus.CREATED);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Erro ao criar consulta"), HttpStatus.BAD_REQUEST);
         }
@@ -42,14 +54,28 @@ public class AppointmentController {
     @Operation(summary = "Obter consulta por ID", description = "Endpoint para obter uma consulta pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consulta encontrada com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consulta encontrada com sucesso\", \"appointment\": {\"id\": 1, \"date\": \"2023-10-01\", \"patientId\": 123}}"))),
-            @ApiResponse(responseCode = "404", description = "Consulta não encontrada", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consulta não encontrada\"}")))
+            @ApiResponse(responseCode = "404", description = "Consulta não encontrada", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consulta não encontrada\"}"))),
+            @ApiResponse(responseCode = "403", description = "Consulta não associada ao usuário autenticado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consulta não associada ao usuário autenticado\"}")))
     })
     public ResponseEntity<Map<String, Object>> getAppointmentById(@PathVariable Long id) {
         try {
-            AppointmentResponseDTO appointment = appointmentService.getAppointmentById(id);
-            return new ResponseEntity<>(Map.of("message", "Consulta encontrada com sucesso", "appointment", appointment), HttpStatus.OK);
-        } catch (Exception e) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof User) {
+                User user = (User) authentication.getPrincipal();
+                AppointmentResponseDTO appointment = appointmentService.getAppointmentById(id);
+                if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"))) {
+                    Long patientId = user.getPatientId();
+                    if (!appointment.getPatientId().equals(patientId)) {
+                        return new ResponseEntity<>(Map.of("message", "Consulta não associada ao usuário autenticado"), HttpStatus.FORBIDDEN);
+                    }
+                }
+                return new ResponseEntity<>(Map.of("message", "Consulta encontrada com sucesso", "appointment", appointment), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(Map.of("message", "Usuário não autenticado"), HttpStatus.UNAUTHORIZED);
+        } catch (AppointmentNotFoundException e) {
             return new ResponseEntity<>(Map.of("message", "Consulta não encontrada"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Erro ao buscar consulta"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -59,10 +85,12 @@ public class AppointmentController {
             @ApiResponse(responseCode = "200", description = "Consulta atualizada com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consulta atualizada com sucesso\", \"appointment\": {\"id\": 1, \"date\": \"2023-10-01\", \"patientId\": 123}}"))),
             @ApiResponse(responseCode = "400", description = "Erro ao atualizar consulta", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Erro ao atualizar consulta\"}")))
     })
-    public ResponseEntity<Map<String, Object>> updateAppointment(@PathVariable Long id, @RequestBody AppointmentRequestDTO dto) {
+    public ResponseEntity<Map<String, Object>> updateAppointment(@PathVariable Long id, @Valid @Validated @RequestBody AppointmentRequestDTO dto) {
         try {
             AppointmentResponseDTO updatedAppointment = appointmentService.updateAppointment(id, dto);
             return new ResponseEntity<>(Map.of("message", "Consulta atualizada com sucesso", "appointment", updatedAppointment), HttpStatus.OK);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Erro ao atualizar consulta"), HttpStatus.BAD_REQUEST);
         }
@@ -88,8 +116,23 @@ public class AppointmentController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Consultas encontradas com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Consultas encontradas com sucesso\", \"appointments\": [{\"id\": 1, \"date\": \"2023-10-01\", \"patientId\": 123}]}")))
     })
-    public ResponseEntity<Map<String, Object>> listAppointments() {
-        List<AppointmentResponseDTO> appointments = appointmentService.listAppointments();
-        return new ResponseEntity<>(Map.of("message", "Consultas encontradas com sucesso", "appointments", appointments), HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> listAppointments(
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Long patientId = null;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            User user = (User) authentication.getPrincipal();
+            if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"))) {
+                patientId = user.getPatientId();
+            }
+        }
+
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(name, patientId, pageable);
+        return new ResponseEntity<>(Map.of("message", "Consultas encontradas com sucesso", "appointments", responseDTOs), HttpStatus.OK);
     }
-}
+
+    }

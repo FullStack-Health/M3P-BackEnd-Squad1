@@ -1,7 +1,7 @@
 package br.com.senai.medicalone.utils;
 
+import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.User;
-import br.com.senai.medicalone.exceptions.customexceptions.JwtTokenExpiredException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -68,7 +68,8 @@ public class JwtUtil {
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", user.getRole().name());
+        claims.put("role", user.getRole().getAuthority());
+        claims.put("patientId", user.getPatientId());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())
@@ -78,14 +79,20 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateToken(Map<String, Object> claims, String subject) {
+    public String generateToken(PreRegisterUser preRegisterUser) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", preRegisterUser.getRole().getAuthority());
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(subject)
+                .setSubject(preRegisterUser.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SignatureAlgorithm.RS256, privateKey)
                 .compact();
+    }
+
+    public Long getPatientIdFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("patientId", Long.class));
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
@@ -99,11 +106,7 @@ public class JwtUtil {
     }
 
     public String getEmailFromToken(String token) {
-        try {
-            return getClaimFromToken(token, Claims::getSubject);
-        } catch (ExpiredJwtException ex) {
-            throw new JwtTokenExpiredException("Token expirado");
-        }
+        return getClaimFromToken(token, Claims::getSubject);
     }
 
     public Date getExpirationDateFromToken(String token) {
@@ -116,15 +119,10 @@ public class JwtUtil {
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(publicKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        return Jwts.parser().setSigningKey(publicKey).parseClaimsJws(token).getBody();
     }
 
     private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
+        return getExpirationDateFromToken(token).before(new Date());
     }
 }

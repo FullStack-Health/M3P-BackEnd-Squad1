@@ -28,4 +28,6 @@ public class UserResponseDTO {
 
     @Schema(description = "Papel do usuário", example = "ADMIN")
     private RoleType role;
+
+    private long patientId;
 }

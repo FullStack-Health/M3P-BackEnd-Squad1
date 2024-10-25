@@ -6,11 +6,13 @@ import br.com.senai.medicalone.dtos.user.UserRequestDTO;
 import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.entities.user.RoleType;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
+import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,7 +44,10 @@ public class PatientService {
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "Create a new patient", description = "Método para criar um novo paciente")
+    @Autowired
+    private UserRepository userRepository;
+
+    @Operation(summary = "Criar um novo paciente", description = "Método para criar um novo paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso"),
             @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
@@ -56,27 +61,43 @@ public class PatientService {
         }
 
         try {
+            // Criar a entidade Patient a partir do DTO
             Patient patient = patientMapper.toEntity(patientRequestDTO);
-            patient.setPassword(patient.getCpf());
+            patient.setPassword(passwordEncoder.encode(patient.getCpf()));
+
+            Optional<User> existingUser = userRepository.findByEmailOrCpf(patientRequestDTO.getEmail(), patientRequestDTO.getCpf());
+            if (existingUser.isPresent()) {
+                patient.setUser(existingUser.get());
+            } else {
+                UserRequestDTO userRequestDTO = new UserRequestDTO();
+                userRequestDTO.setName(patient.getFullName());
+                userRequestDTO.setEmail(patient.getEmail());
+                userRequestDTO.setBirthDate(patient.getBirthDate());
+                userRequestDTO.setPhone(patient.getPhone());
+                userRequestDTO.setCpf(patient.getCpf());
+                userRequestDTO.setPassword(patient.getCpf());
+                userRequestDTO.setRole(RoleType.PACIENTE);
+
+                UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
+
+                User newUser = userRepository.findById(userResponseDTO.getId()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                patient.setUser(newUser);
+            }
+
             patient = patientRepository.save(patient);
 
-            UserRequestDTO userRequestDTO = new UserRequestDTO();
-            userRequestDTO.setName(patient.getFullName());
-            userRequestDTO.setEmail(patient.getEmail());
-            userRequestDTO.setBirthDate(patient.getBirthDate());
-            userRequestDTO.setPhone(patient.getPhone());
-            userRequestDTO.setCpf(patient.getCpf());
-            userRequestDTO.setPassword(patient.getCpf());
-            userRequestDTO.setRole(RoleType.PACIENTE);
-            UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
+            User user = patient.getUser();
+            user.setPatientId(patient.getId());
+            userRepository.save(user);
 
             return patientMapper.toResponseDTO(patient);
         } catch (DataIntegrityViolationException ex) {
-            throw new PatientAlreadyExistsException("Paciente já cadastrado ");
+            throw new PatientAlreadyExistsException("Paciente já cadastrado");
         }
     }
 
-    @Operation(summary = "Get patient by ID", description = "Método para obter um paciente pelo ID")
+
+    @Operation(summary = "Obter paciente pelo ID", description = "Método para obter um paciente pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -90,7 +111,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Update a patient", description = "Método para atualizar um paciente")
+    @Operation(summary = "Atualizar um paciente", description = "Método para atualizar um paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Paciente atualizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -112,7 +133,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Delete a patient", description = "Método para excluir um paciente")
+    @Operation(summary = "Excluir um paciente", description = "Método para excluir um paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Paciente excluído com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -127,7 +148,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get all patients", description = "Método para obter todos os pacientes")
+    @Operation(summary = "Obter todos os pacientes", description = "Método para obter todos os pacientes")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso")
     })
@@ -190,7 +211,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get patient by CPF", description = "Método para obter um paciente pelo CPF")
+    @Operation(summary = "Obter paciente pelo CPF", description = "Método para obter um paciente pelo CPF")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -204,7 +225,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get patients by name", description = "Método para obter pacientes pelo nome")
+    @Operation(summary = "Obter pacientes pelo nome", description = "Método para obter pacientes pelo nome")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
@@ -218,7 +239,7 @@ public class PatientService {
         }
     }
 
-    @Operation(summary = "Get patients by phone", description = "Método para obter pacientes pelo telefone")
+    @Operation(summary = "Obter pacientes pelo telefone", description = "Método para obter pacientes pelo telefone")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")

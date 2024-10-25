@@ -1,15 +1,15 @@
-package br.com.senai.medicalone.controllers.exam;
+package br.com.senai.medicalone.controllers.Appointment;
 
-import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
-import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
+
+import br.com.senai.medicalone.dtos.appointment.AppointmentRequestDTO;
+import br.com.senai.medicalone.dtos.appointment.AppointmentResponseDTO;
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.entities.patient.Address;
-import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
-import br.com.senai.medicalone.services.exam.ExamService;
+import br.com.senai.medicalone.services.appointment.AppointmentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,20 +24,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class ExamControllerIntegrationTest {
+public class AppointmentControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private ExamService examService;
+    private AppointmentService appointmentService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -51,7 +51,7 @@ public class ExamControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private ExamRequestDTO examRequestDTO;
+    private AppointmentRequestDTO appointmentRequestDTO;
 
     private String jwtToken;
 
@@ -59,7 +59,6 @@ public class ExamControllerIntegrationTest {
     public void setUp() throws Exception {
         patientRepository.deleteAll();
         userRepository.deleteAll();
-
 
         User user = new User();
         user.setEmail("admin@example.com");
@@ -115,126 +114,124 @@ public class ExamControllerIntegrationTest {
         return objectMapper.readTree(response).get("patient").get("id").asLong();
     }
 
-    private ExamRequestDTO createMockExam(Long patientId) {
-        ExamRequestDTO examRequestDTO = new ExamRequestDTO();
-        examRequestDTO.setName("Hemograma Completo");
-        examRequestDTO.setExamDate(LocalDate.of(2023, 10, 1));
-        examRequestDTO.setExamTime(LocalTime.of(8, 30));
-        examRequestDTO.setType("Sangue");
-        examRequestDTO.setLaboratory("Laboratório XYZ");
-        examRequestDTO.setDocumentUrl("http://example.com/document.pdf");
-        examRequestDTO.setResults("Resultados detalhados do exame");
-        examRequestDTO.setPatientId(patientId);
-        return examRequestDTO;
+    private AppointmentRequestDTO createMockAppointment(Long patientId) {
+        AppointmentRequestDTO appointmentRequestDTO = new AppointmentRequestDTO();
+        appointmentRequestDTO.setAppointmentReason("Consulta de rotina");
+        appointmentRequestDTO.setAppointmentDate(LocalDate.of(2023, 10, 1));
+        appointmentRequestDTO.setAppointmentTime(LocalTime.of(10, 0));
+        appointmentRequestDTO.setProblemDescription("Paciente vem para uma consulta de rotina.");
+        appointmentRequestDTO.setPrescribedMedication("Nenhuma");
+        appointmentRequestDTO.setObservations("Paciente deve retornar em seis meses.");
+        appointmentRequestDTO.setPatientId(patientId);
+        return appointmentRequestDTO;
     }
 
     @Test
-    public void testCreateExam_Success() throws Exception {
+    public void testCreateAppointment_Success() throws Exception {
         Long patientId = createMockPatient();
-        examRequestDTO = createMockExam(patientId);
+        appointmentRequestDTO = createMockAppointment(patientId);
 
-        mockMvc.perform(post("/api/exames")
+        mockMvc.perform(post("/api/consultas")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(examRequestDTO))
+                        .content(objectMapper.writeValueAsString(appointmentRequestDTO))
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("Exame criado com sucesso"))
-                .andExpect(jsonPath("$.exam.name").value(examRequestDTO.getName()));
+                .andExpect(jsonPath("$.message").value("Consulta criada com sucesso"))
+                .andExpect(jsonPath("$.appointment.appointmentReason").value(appointmentRequestDTO.getAppointmentReason()));
     }
 
     @Test
-    public void testCreateExam_MissingData() throws Exception {
-        ExamRequestDTO invalidExamRequestDTO = new ExamRequestDTO();
-        mockMvc.perform(post("/api/exames")
+    public void testCreateAppointment_MissingData() throws Exception {
+        AppointmentRequestDTO invalidAppointmentRequestDTO = new AppointmentRequestDTO();
+        mockMvc.perform(post("/api/consultas")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidExamRequestDTO))
+                        .content(objectMapper.writeValueAsString(invalidAppointmentRequestDTO))
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Erro ao criar exame"));
+                .andExpect(jsonPath("$.message").value("Motivo da consulta é obrigatório"));
     }
 
     @Test
-    public void testGetExamById_Success() throws Exception {
+    public void testGetAppointmentById_Success() throws Exception {
         Long patientId = createMockPatient();
-        examRequestDTO = createMockExam(patientId);
-        ExamResponseDTO savedExam = examService.createExam(examRequestDTO);
+        appointmentRequestDTO = createMockAppointment(patientId);
+        AppointmentResponseDTO savedAppointment = appointmentService.createAppointment(appointmentRequestDTO);
 
-        mockMvc.perform(get("/api/exames/{id}", savedExam.getId())
+        mockMvc.perform(get("/api/consultas/{id}", savedAppointment.getId())
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Exame encontrado com sucesso"))
-                .andExpect(jsonPath("$.exam.name").value(savedExam.getName()));
+                .andExpect(jsonPath("$.message").value("Consulta encontrada com sucesso"))
+                .andExpect(jsonPath("$.appointment.appointmentReason").value(savedAppointment.getAppointmentReason()));
     }
 
     @Test
-    public void testGetExamById_NotFound() throws Exception {
-        mockMvc.perform(get("/api/exames/{id}", 999L)
+    public void testGetAppointmentById_NotFound() throws Exception {
+        mockMvc.perform(get("/api/consultas/{id}", 999L)
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Exame não encontrado"));
+                .andExpect(jsonPath("$.message").value("Consulta não encontrada"));
     }
 
     @Test
-    public void testUpdateExam_Success() throws Exception {
+    public void testUpdateAppointment_Success() throws Exception {
         Long patientId = createMockPatient();
-        examRequestDTO = createMockExam(patientId);
-        ExamResponseDTO savedExam = examService.createExam(examRequestDTO);
-        examRequestDTO.setName("Updated Exam Name");
+        appointmentRequestDTO = createMockAppointment(patientId);
+        AppointmentResponseDTO savedAppointment = appointmentService.createAppointment(appointmentRequestDTO);
+        appointmentRequestDTO.setAppointmentReason("Updated Reason");
 
-        mockMvc.perform(put("/api/exames/{id}", savedExam.getId())
+        mockMvc.perform(put("/api/consultas/{id}", savedAppointment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(examRequestDTO))
+                        .content(objectMapper.writeValueAsString(appointmentRequestDTO))
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Exame atualizado com sucesso"))
-                .andExpect(jsonPath("$.exam.name").value("Updated Exam Name"));
+                .andExpect(jsonPath("$.message").value("Consulta atualizada com sucesso"))
+                .andExpect(jsonPath("$.appointment.appointmentReason").value("Updated Reason"));
     }
 
     @Test
-    public void testUpdateExam_InvalidData() throws Exception {
+    public void testUpdateAppointment_InvalidData() throws Exception {
         Long patientId = createMockPatient();
-        examRequestDTO = createMockExam(patientId);
-        ExamResponseDTO savedExam = examService.createExam(examRequestDTO);
-        examRequestDTO.setName(""); // Invalid data
+        appointmentRequestDTO = createMockAppointment(patientId);
+        AppointmentResponseDTO savedAppointment = appointmentService.createAppointment(appointmentRequestDTO);
+        appointmentRequestDTO.setAppointmentReason("");
 
-        mockMvc.perform(put("/api/exames/{id}", savedExam.getId())
+        mockMvc.perform(put("/api/consultas/{id}", savedAppointment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(examRequestDTO))
+                        .content(objectMapper.writeValueAsString(appointmentRequestDTO))
                         .header("Authorization", "Bearer " + jwtToken))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Erro ao atualizar exame"));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void testDeleteExam_Success() throws Exception {
+    public void testDeleteAppointment_Success() throws Exception {
         Long patientId = createMockPatient();
-        examRequestDTO = createMockExam(patientId);
-        ExamResponseDTO savedExam = examService.createExam(examRequestDTO);
+        appointmentRequestDTO = createMockAppointment(patientId);
+        AppointmentResponseDTO savedAppointment = appointmentService.createAppointment(appointmentRequestDTO);
 
-        mockMvc.perform(delete("/api/exames/{id}", savedExam.getId())
+        mockMvc.perform(delete("/api/consultas/{id}", savedAppointment.getId())
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Exame excluído com sucesso"));
+                .andExpect(jsonPath("$.message").value("Consulta excluída com sucesso"));
     }
 
     @Test
-    public void testDeleteExam_NotFound() throws Exception {
-        mockMvc.perform(delete("/api/exames/{id}", 999L)
+    public void testDeleteAppointment_NotFound() throws Exception {
+        mockMvc.perform(delete("/api/consultas/{id}", 999L)
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Exame não encontrado"));
+                .andExpect(jsonPath("$.message").value("Consulta não encontrada"));
     }
 
     @Test
-    public void testListExams_Success() throws Exception {
+    public void testListAppointments_Success() throws Exception {
         Long patientId = createMockPatient();
-        examRequestDTO = createMockExam(patientId);
-        examService.createExam(examRequestDTO);
+        appointmentRequestDTO = createMockAppointment(patientId);
+        appointmentService.createAppointment(appointmentRequestDTO);
 
-        mockMvc.perform(get("/api/exames")
+        mockMvc.perform(get("/api/consultas")
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Exames encontrados com sucesso"))
-                .andExpect(jsonPath("$.exams.content[0].name").value(examRequestDTO.getName()));
+                .andExpect(jsonPath("$.message").value("Consultas encontradas com sucesso"))
+                .andExpect(jsonPath("$.appointments.content[0].appointmentReason").value(appointmentRequestDTO.getAppointmentReason()));
     }
 }

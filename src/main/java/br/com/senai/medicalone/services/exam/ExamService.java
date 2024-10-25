@@ -14,11 +14,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ExamService {
@@ -32,7 +35,7 @@ public class ExamService {
     @Autowired
     private PatientRepository patientRepository;
 
-    @Operation(summary = "Create a new exam", description = "Método para criar um novo exame")
+    @Operation(summary = "Cria um novo exame", description = "Método para criar um novo exame")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Exame criado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
@@ -44,15 +47,26 @@ public class ExamService {
             throw new PatientNotFoundException("Paciente não encontrado");
         }
         if (dto.getName() == null || dto.getName().isEmpty()) {
-            throw new BadRequestException("Exam name is required");
+            throw new BadRequestException("Nome do exame é obrigatório");
         }
+        if (dto.getExamDate() == null) {
+            throw new BadRequestException("Data do exame é obrigatória");
+        }
+        if (dto.getExamTime() == null) {
+            throw new BadRequestException("Hora do exame é obrigatória");
+        }
+        if (dto.getType() == null || dto.getType().isEmpty()) {
+            throw new BadRequestException("Tipo do exame é obrigatório");
+        }
+
         Exam exam = examMapper.toEntity(dto);
         exam.setPatient(patientOptional.get());
+        exam.setId(null);
         exam = examRepository.save(exam);
         return examMapper.toResponseDTO(exam);
     }
 
-    @Operation(summary = "Get exam by ID", description = "Método para obter um exame pelo ID")
+    @Operation(summary = "Busca exame pelo ID", description = "Método para obter um exame pelo ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exame encontrado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Exame não encontrado")
@@ -65,7 +79,7 @@ public class ExamService {
         return examMapper.toResponseDTO(examOptional.get());
     }
 
-    @Operation(summary = "Update exam", description = "Método para atualizar um exame")
+    @Operation(summary = "Atualiza exame", description = "Método para atualizar um exame")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exame atualizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Exame não encontrado")
@@ -91,7 +105,7 @@ public class ExamService {
         return examMapper.toResponseDTO(exam);
     }
 
-    @Operation(summary = "Delete exam", description = "Método para deletar um exame")
+    @Operation(summary = "Deleta um exame", description = "Método para deletar um exame")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Exame deletado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Exame não encontrado")
@@ -104,19 +118,29 @@ public class ExamService {
         examRepository.deleteById(id);
     }
 
-    @Operation(summary = "List exams", description = "Método para listar exames")
+    @Operation(summary = "Lista todos os exames", description = "Método para listar exames")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Exames listados com sucesso")
     })
-    public List<ExamResponseDTO> listExams(String name) {
-        List<Exam> exams;
-        if (name != null && !name.isEmpty()) {
-            exams = examRepository.findByName(name);
+    public Page<ExamResponseDTO> listExams(String name, Long patientId, Pageable pageable) {
+        Page<Exam> exams;
+        if (patientId != null) {
+            exams = examRepository.findByPatientId(patientId, pageable);
+        } else if (name != null && !name.isEmpty()) {
+            exams = examRepository.findByName(name, pageable);
         } else {
-            exams = examRepository.findAll();
+            exams = examRepository.findAll(pageable);
         }
-        return exams.stream()
-                .map(examMapper::toResponseDTO)
-                .toList();
+        return exams.map(examMapper::toResponseDTO);
     }
+
+    @Operation(summary = "Lista exames por ID do paciente", description = "Método para listar exames por ID do paciente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Exames encontrados com sucesso")
+    })
+    public Page<ExamResponseDTO> getExamsByPatientId(Long patientId, Pageable pageable) {
+        Page<Exam> exams = examRepository.findByPatientId(patientId, pageable);
+        return exams.map(examMapper::toResponseDTO);
+    }
+
 }

@@ -2,6 +2,7 @@ package br.com.senai.medicalone.entities.patient;
 
 import br.com.senai.medicalone.entities.appointment.Appointment;
 import br.com.senai.medicalone.entities.exam.Exam;
+import br.com.senai.medicalone.entities.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
@@ -129,6 +130,10 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     @Schema(description = "Lista de consultas do paciente")
     private List<Appointment> appointments = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @PrePersist
     @PreUpdate

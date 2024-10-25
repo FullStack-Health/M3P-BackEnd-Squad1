@@ -7,11 +7,16 @@ import br.com.senai.medicalone.exceptions.customexceptions.AppointmentNotFoundEx
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.mappers.appointment.AppointmentMapper;
 import br.com.senai.medicalone.repositories.appointment.AppointmentRepository;
+import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -30,6 +35,9 @@ class AppointmentServiceTest {
     @Mock
     private AppointmentMapper appointmentMapper;
 
+    @Mock
+    private PatientRepository patientRepository;
+
     @InjectMocks
     private AppointmentService appointmentService;
 
@@ -47,10 +55,12 @@ class AppointmentServiceTest {
         requestDTO.setProblemDescription("No issues");
         requestDTO.setPrescribedMedication("None");
         requestDTO.setObservations("None");
+        requestDTO.setPatientId(1L);
 
         Appointment appointment = new Appointment();
         appointment.setId(1L);
 
+        when(patientRepository.existsById(1L)).thenReturn(true);
         when(appointmentMapper.toEntity(any(AppointmentRequestDTO.class))).thenReturn(appointment);
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(appointment);
         when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
@@ -69,6 +79,23 @@ class AppointmentServiceTest {
         requestDTO.setProblemDescription("No issues");
         requestDTO.setPrescribedMedication("None");
         requestDTO.setObservations("None");
+        requestDTO.setPatientId(1L);
+
+        assertThrows(BadRequestException.class, () -> appointmentService.createAppointment(requestDTO));
+    }
+
+    @Test
+    void createAppointment_PatientNotFound_ShouldThrowException() {
+        AppointmentRequestDTO requestDTO = new AppointmentRequestDTO();
+        requestDTO.setAppointmentReason("Routine Checkup");
+        requestDTO.setAppointmentDate(LocalDate.now());
+        requestDTO.setAppointmentTime(LocalTime.now());
+        requestDTO.setProblemDescription("No issues");
+        requestDTO.setPrescribedMedication("None");
+        requestDTO.setObservations("None");
+        requestDTO.setPatientId(1L);
+
+        when(patientRepository.existsById(1L)).thenReturn(false);
 
         assertThrows(BadRequestException.class, () -> appointmentService.createAppointment(requestDTO));
     }
@@ -106,11 +133,13 @@ class AppointmentServiceTest {
         requestDTO.setProblemDescription("Updated Description");
         requestDTO.setPrescribedMedication("Updated Medication");
         requestDTO.setObservations("Updated Observations");
+        requestDTO.setPatientId(1L);
 
         Appointment existingAppointment = new Appointment();
         existingAppointment.setId(id);
 
         when(appointmentRepository.findById(id)).thenReturn(Optional.of(existingAppointment));
+        when(patientRepository.existsById(1L)).thenReturn(true);
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(existingAppointment);
         when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
 
@@ -123,10 +152,15 @@ class AppointmentServiceTest {
     void updateAppointment_NotFound() {
         Long id = 1L;
         AppointmentRequestDTO requestDTO = new AppointmentRequestDTO();
+        requestDTO.setAppointmentReason("Routine Checkup");
+        requestDTO.setAppointmentDate(LocalDate.now());
+        requestDTO.setAppointmentTime(LocalTime.now());
+        requestDTO.setProblemDescription("No issues");
+        requestDTO.setPatientId(1L);
 
         when(appointmentRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(AppointmentNotFoundException.class, () -> appointmentService.updateAppointment(id, requestDTO));
+        assertThrows(BadRequestException.class, () -> appointmentService.updateAppointment(id, requestDTO));
     }
 
     @Test
@@ -151,24 +185,45 @@ class AppointmentServiceTest {
 
     @Test
     void listAppointments_Success() {
+        Pageable pageable = PageRequest.of(0, 10);
         List<Appointment> appointments = List.of(new Appointment(), new Appointment());
+        Page<Appointment> appointmentPage = new PageImpl<>(appointments, pageable, appointments.size());
 
-        when(appointmentRepository.findAll()).thenReturn(appointments);
+        when(appointmentRepository.findAll(pageable)).thenReturn(appointmentPage);
         when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
 
-        List<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments();
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(null, null, pageable);
 
         assertNotNull(responseDTOs);
-        assertEquals(2, responseDTOs.size());
+        assertEquals(2, responseDTOs.getTotalElements());
     }
 
     @Test
     void listAppointments_NoAppointmentsFound() {
-        when(appointmentRepository.findAll()).thenReturn(List.of());
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Appointment> appointmentPage = new PageImpl<>(List.of(), pageable, 0);
 
-        List<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments();
+        when(appointmentRepository.findAll(pageable)).thenReturn(appointmentPage);
+
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.listAppointments(null, null, pageable);
 
         assertNotNull(responseDTOs);
         assertTrue(responseDTOs.isEmpty());
+    }
+
+    @Test
+    void getAppointmentsByPatientId_Success() {
+        Long patientId = 1L;
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Appointment> appointments = List.of(new Appointment(), new Appointment());
+        Page<Appointment> appointmentPage = new PageImpl<>(appointments, pageable, appointments.size());
+
+        when(appointmentRepository.findByPatientId(patientId, pageable)).thenReturn(appointmentPage);
+        when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
+
+        Page<AppointmentResponseDTO> responseDTOs = appointmentService.getAppointmentsByPatientId(patientId, pageable);
+
+        assertNotNull(responseDTOs);
+        assertEquals(2, responseDTOs.getTotalElements());
     }
 }
