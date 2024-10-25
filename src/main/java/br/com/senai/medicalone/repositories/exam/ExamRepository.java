@@ -12,8 +12,5 @@ import java.util.List;
 @Repository
 public interface ExamRepository extends JpaRepository<Exam, Long> {
     Page<Exam> findByName(String name, Pageable pageable);
-    List<Exam> findByExamDate(LocalDate examDate);
-    List<Exam> findByType(String type);
-    List<Exam> findByLaboratory(String laboratory);
     Page<Exam> findByPatientId(Long patientId, Pageable pageable);
 }

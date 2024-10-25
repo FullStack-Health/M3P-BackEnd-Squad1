@@ -133,11 +133,13 @@ class AppointmentServiceTest {
         requestDTO.setProblemDescription("Updated Description");
         requestDTO.setPrescribedMedication("Updated Medication");
         requestDTO.setObservations("Updated Observations");
+        requestDTO.setPatientId(1L);
 
         Appointment existingAppointment = new Appointment();
         existingAppointment.setId(id);
 
         when(appointmentRepository.findById(id)).thenReturn(Optional.of(existingAppointment));
+        when(patientRepository.existsById(1L)).thenReturn(true);
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(existingAppointment);
         when(appointmentMapper.toResponseDTO(any(Appointment.class))).thenReturn(new AppointmentResponseDTO());
 
@@ -150,10 +152,15 @@ class AppointmentServiceTest {
     void updateAppointment_NotFound() {
         Long id = 1L;
         AppointmentRequestDTO requestDTO = new AppointmentRequestDTO();
+        requestDTO.setAppointmentReason("Routine Checkup");
+        requestDTO.setAppointmentDate(LocalDate.now());
+        requestDTO.setAppointmentTime(LocalTime.now());
+        requestDTO.setProblemDescription("No issues");
+        requestDTO.setPatientId(1L);
 
         when(appointmentRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(AppointmentNotFoundException.class, () -> appointmentService.updateAppointment(id, requestDTO));
+        assertThrows(BadRequestException.class, () -> appointmentService.updateAppointment(id, requestDTO));
     }
 
     @Test

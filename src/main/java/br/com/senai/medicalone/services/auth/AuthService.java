@@ -1,4 +1,4 @@
-package br.com.senai.medicalone.services;
+package br.com.senai.medicalone.services.auth;
 
 import br.com.senai.medicalone.entities.user.User;
 import org.springframework.security.core.Authentication;
