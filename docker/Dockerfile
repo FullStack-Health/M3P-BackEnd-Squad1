@@ -8,8 +8,7 @@ COPY .. .
 # Transforma o mvnw em executável
 RUN chmod 700 mvnw
 
-RUN ./mvnw clean package -DskipTests
-# por enquanto pulando testes, pois há falha nos testes
+RUN ./mvnw clean package -Dspring.profiles.active=test
 
 FROM openjdk:21-slim-buster
 
