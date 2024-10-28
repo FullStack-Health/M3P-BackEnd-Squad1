@@ -156,7 +156,6 @@ public class UserService {
     public Page<UserResponseDTO> findAllUsers(Pageable pageable) {
         Page<User> usersPage = userRepository.findAll(pageable);
         List<UserResponseDTO> filteredUsers = usersPage.stream()
-                .filter(user -> !user.getRole().equals(RoleType.PACIENTE))
                 .map(this::convertToUserResponseDTO)
                 .collect(Collectors.toList());
         return new PageImpl<>(filteredUsers, pageable, usersPage.getTotalElements());
@@ -170,9 +169,6 @@ public class UserService {
     public UserResponseDTO findUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        if (user.getRole().equals(RoleType.PACIENTE)) {
-            throw new UserNotFoundException("Usuário não encontrado");
-        }
         user.setPassword(maskPassword(user.getPassword()));
         return convertToUserResponseDTO(user);
     }
@@ -234,6 +230,7 @@ public class UserService {
         dto.setPhone(user.getPhone());
         dto.setCpf(user.getCpf());
         dto.setRole(user.getRole());
+        dto.setPatientId(user.getRole().equals(RoleType.PACIENTE) ? user.getPatientId() : null);
         return dto;
     }
 
