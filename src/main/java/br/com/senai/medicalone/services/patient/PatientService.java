@@ -56,12 +56,13 @@ public class PatientService {
     public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
         validatePatientRequestDTO(patientRequestDTO);
 
-        if (patientRepository.existsByEmail(patientRequestDTO.getEmail()) || patientRepository.existsByCpf(patientRequestDTO.getCpf())) {
+        if (patientRepository.existsByEmail(patientRequestDTO.getEmail()) ||
+                patientRepository.existsByCpf(patientRequestDTO.getCpf()) ||
+                patientRepository.existsByPhone(patientRequestDTO.getPhone())) {
             throw new PatientAlreadyExistsException("Paciente já cadastrado");
         }
 
         try {
-            // Criar a entidade Patient a partir do DTO
             Patient patient = patientMapper.toEntity(patientRequestDTO);
             patient.setPassword(passwordEncoder.encode(patient.getCpf()));
 
