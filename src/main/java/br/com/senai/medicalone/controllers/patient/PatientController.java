@@ -3,6 +3,7 @@ package br.com.senai.medicalone.controllers.patient;
 import br.com.senai.medicalone.dtos.patient.PatientRecordDTO;
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
+import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
 import br.com.senai.medicalone.services.patient.PatientRecordService;
 import br.com.senai.medicalone.services.patient.PatientService;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -176,12 +179,24 @@ public class PatientController {
     @Operation(summary = "Busca prontuario de um paciente ID", description = "Endpoint para obter um prontuário de paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Prontuário encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Prontuário encontrado com sucesso\", \"record\": {\"id\": 1, \"name\": \"John Doe\", \"exams\": [...], \"appointments\": [...]}\"}"))),
-            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}"))),
+            @ApiResponse(responseCode = "403", description = "Prontuário não associado ao usuário autenticado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Prontuário não associado ao usuário autenticado\"}")))
     })
     public ResponseEntity<Map<String, Object>> getPatientRecord(@PathVariable Long id) {
         try {
-            PatientRecordDTO record = patientRecordService.getPatientRecord(id);
-            return new ResponseEntity<>(Map.of("message", "Prontuário encontrado com sucesso", "record", record), HttpStatus.OK);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof User) {
+                User user = (User) authentication.getPrincipal();
+                if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PACIENTE"))) {
+                    Long patientId = user.getPatientId();
+                    if (!id.equals(patientId)) {
+                        return new ResponseEntity<>(Map.of("message", "Prontuário não associado ao usuário autenticado"), HttpStatus.FORBIDDEN);
+                    }
+                }
+                PatientRecordDTO record = patientRecordService.getPatientRecord(id);
+                return new ResponseEntity<>(Map.of("message", "Prontuário encontrado com sucesso", "record", record), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(Map.of("message", "Usuário não autenticado"), HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
         }

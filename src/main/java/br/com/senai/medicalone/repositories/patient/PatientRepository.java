@@ -12,6 +12,7 @@ import java.util.List;
 public interface PatientRepository extends JpaRepository<Patient, Long> {
     boolean existsByEmail(String email);
     boolean existsByCpf(String cpf);
+    boolean existsByPhone(String phone);
 
     @Query("SELECT p FROM Patient p WHERE p.cpf = :cpf")
     Patient findByCpf(@Param("cpf") String cpf);
