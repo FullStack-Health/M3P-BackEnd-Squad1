@@ -52,7 +52,7 @@ public class UserService {
             @ApiResponse(responseCode = "409", description = "Email ou CPF já cadastrado")
     })
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
-        validateUserFields(userRequestDTO);
+        validateUserFields(userRequestDTO, false);
         if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
             throw new DataConflictException("Email já cadastrado.");
         }
@@ -67,6 +67,11 @@ public class UserService {
         user.setCpf(userRequestDTO.getCpf());
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         user.setRole(userRequestDTO.getRole());
+
+        if (user.getName() == null || user.getBirthDate() == null || user.getPhone() == null || user.getCpf() == null) {
+            throw new ValidationException("Dados ausentes ou incorretos");
+        }
+
         User savedUser = userRepository.save(user);
         return convertToUserResponseDTO(savedUser);
     }
@@ -86,18 +91,31 @@ public class UserService {
             throw new BadRequestException("Role inválida. Somente ADMIN ou MEDICO são permitidos.");
         }
         preRegisterUser.setPassword(passwordEncoder.encode(preRegisterUser.getPassword()));
-        return preRegisterUserRepository.save(preRegisterUser);
+        PreRegisterUser savedPreRegisterUser = preRegisterUserRepository.save(preRegisterUser);
+
+        User user = convertPreRegisterUserToUser(savedPreRegisterUser);
+        userRepository.save(user);
+
+        return savedPreRegisterUser;
     }
 
-    private void validateUserFields(UserRequestDTO userRequestDTO) {
-        if (userRequestDTO.getName() == null || userRequestDTO.getName().isEmpty() ||
-                userRequestDTO.getEmail() == null || userRequestDTO.getEmail().isEmpty() ||
-                userRequestDTO.getBirthDate() == null ||
-                userRequestDTO.getPhone() == null || userRequestDTO.getPhone().isEmpty() ||
-                userRequestDTO.getCpf() == null || userRequestDTO.getCpf().isEmpty() ||
-                userRequestDTO.getPassword() == null || userRequestDTO.getPassword().isEmpty() ||
-                userRequestDTO.getRole() == null) {
-            throw new ValidationException("Dados ausentes ou incorretos");
+    private void validateUserFields(UserRequestDTO userRequestDTO, boolean isPreRegister) {
+        if (!isPreRegister) {
+            if (userRequestDTO.getName() == null || userRequestDTO.getName().isEmpty() ||
+                    userRequestDTO.getEmail() == null || userRequestDTO.getEmail().isEmpty() ||
+                    userRequestDTO.getBirthDate() == null ||
+                    userRequestDTO.getPhone() == null || userRequestDTO.getPhone().isEmpty() ||
+                    userRequestDTO.getCpf() == null || userRequestDTO.getCpf().isEmpty() ||
+                    userRequestDTO.getPassword() == null || userRequestDTO.getPassword().isEmpty() ||
+                    userRequestDTO.getRole() == null) {
+                throw new ValidationException("Dados ausentes ou incorretos");
+            }
+        } else {
+            if (userRequestDTO.getEmail() == null || userRequestDTO.getEmail().isEmpty() ||
+                    userRequestDTO.getPassword() == null || userRequestDTO.getPassword().isEmpty() ||
+                    userRequestDTO.getRole() == null) {
+                throw new ValidationException("Dados ausentes ou incorretos");
+            }
         }
     }
 
@@ -125,11 +143,15 @@ public class UserService {
     public UserResponseDTO updateUser(Long id, UserRequestDTO updatedUserDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        if (user.getRole().equals(RoleType.PACIENTE)) {
-            throw new DataConflictException("Não é possível atualizar usuários com perfil PACIENTE");
-        }
-        user.setEmail(updatedUserDTO.getEmail());
+
         user.setName(updatedUserDTO.getName());
+        user.setEmail(updatedUserDTO.getEmail());
+        user.setBirthDate(updatedUserDTO.getBirthDate());
+        user.setPhone(updatedUserDTO.getPhone());
+        user.setCpf(updatedUserDTO.getCpf());
+        user.setPassword(passwordEncoder.encode(updatedUserDTO.getPassword()));
+        user.setRole(updatedUserDTO.getRole());
+
         User updatedUser = userRepository.save(user);
         return convertToUserResponseDTO(updatedUser);
     }
@@ -143,9 +165,7 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        if (user.getRole().equals(RoleType.PACIENTE)) {
-            throw new DataConflictException("Não é possível excluir usuários com perfil PACIENTE");
-        }
+
         userRepository.delete(user);
     }
 
@@ -240,5 +260,18 @@ public class UserService {
 
     public Optional<User> findByUsername(String username) {
         return userRepository.findByEmail(username);
+    }
+
+    public User convertPreRegisterUserToUser(PreRegisterUser preRegisterUser) {
+        User user = new User();
+        user.setEmail(preRegisterUser.getEmail());
+        user.setPassword(preRegisterUser.getPassword());
+        user.setRole(preRegisterUser.getRole());
+
+        user.setName(null);
+        user.setBirthDate(null);
+        user.setPhone(null);
+        user.setCpf(null);
+        return user;
     }
 }

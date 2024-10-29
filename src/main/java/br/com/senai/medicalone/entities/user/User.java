@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,9 +30,8 @@ public class User implements UserDetails {
     @Schema(description = "ID do usuário", example = "1")
     private Long id;
 
-    @NotBlank
     @Size(max = 255)
-    @Column(nullable = false, length = 255)
+    @Column(nullable = true, length = 255)
     @Schema(description = "Nome do usuário", example = "John Doe")
     private String name;
 
@@ -42,22 +42,19 @@ public class User implements UserDetails {
     @Schema(description = "Email do usuário", example = "user@example.com")
     private String email;
 
-    @NotNull
     @Past
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Schema(description = "Data de nascimento do usuário", example = "1990-01-01")
     private LocalDate birthDate;
 
-    @NotBlank
     @Size(max = 20)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = true, length = 20)
     @Schema(description = "Telefone do usuário", example = "1234567890")
     private String phone;
 
-    @NotBlank
     @Size(max = 14)
-    @Column(nullable = false, unique = true, length = 14)
+    @Column(nullable = true, unique = true, length = 14) // Permitir null
     @Schema(description = "CPF do usuário", example = "123.456.789-00")
     private String cpf;
 
@@ -87,7 +84,6 @@ public class User implements UserDetails {
     public String cleanString(String value) {
         return value != null ? value.replaceAll("\\D", "") : null;
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
