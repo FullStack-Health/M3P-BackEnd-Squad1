@@ -29,5 +29,6 @@ public class UserResponseDTO {
     @Schema(description = "Papel do usuário", example = "ADMIN")
     private RoleType role;
 
-    private long patientId;
+    @Schema(description = "ID do paciente associado", example = "1")
+    private Long patientId;
 }
