@@ -54,7 +54,7 @@ public class User implements UserDetails {
     private String phone;
 
     @Size(max = 14)
-    @Column(nullable = true, unique = true, length = 14) // Permitir null
+    @Column(nullable = true, unique = true, length = 14)
     @Schema(description = "CPF do usuário", example = "123.456.789-00")
     private String cpf;
 
