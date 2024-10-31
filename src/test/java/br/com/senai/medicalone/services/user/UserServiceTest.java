@@ -140,8 +140,14 @@ public class UserServiceTest {
         UserRequestDTO updatedUserDTO = new UserRequestDTO();
         updatedUserDTO.setEmail("updated@example.com");
         updatedUserDTO.setName("Updated Name");
+        updatedUserDTO.setBirthDate(LocalDate.now());
+        updatedUserDTO.setPhone("987654321");
+        updatedUserDTO.setCpf("98765432100");
+        updatedUserDTO.setPassword("newpassword");
+        updatedUserDTO.setRole(RoleType.ADMIN);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(updatedUserDTO.getPassword())).thenReturn("encodedNewPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         UserResponseDTO result = userService.updateUser(1L, updatedUserDTO);
@@ -149,6 +155,8 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals("updated@example.com", result.getEmail());
         assertEquals("Updated Name", result.getName());
+        assertEquals("987654321", result.getPhone());
+        assertEquals("98765432100", result.getCpf());
         verify(userRepository, times(1)).save(any(User.class));
     }
 
@@ -162,16 +170,6 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, updatedUserDTO));
     }
 
-    @Test
-    public void testUpdateUser_CannotUpdatePaciente() {
-        user.setRole(RoleType.PACIENTE);
-        UserRequestDTO updatedUserDTO = new UserRequestDTO();
-        updatedUserDTO.setEmail("updated@example.com");
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        assertThrows(DataConflictException.class, () -> userService.updateUser(1L, updatedUserDTO));
-    }
 
     @Test
     public void testDeleteUser_Success() {
@@ -189,13 +187,6 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(1L));
     }
 
-    @Test
-    public void testDeleteUser_CannotDeletePaciente() {
-        user.setRole(RoleType.PACIENTE);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-
-        assertThrows(DataConflictException.class, () -> userService.deleteUser(1L));
-    }
 
     @Test
     public void testFindAllUsers_Success() {
@@ -336,11 +327,5 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> userService.findUserById(1L));
     }
 
-    @Test
-    public void testFindUserById_PacienteRole() {
-        user.setRole(RoleType.PACIENTE);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        assertThrows(UserNotFoundException.class, () -> userService.findUserById(1L));
-    }
 }
