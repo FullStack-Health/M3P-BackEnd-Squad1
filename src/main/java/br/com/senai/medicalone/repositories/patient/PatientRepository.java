@@ -14,12 +14,11 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     boolean existsByCpf(String cpf);
     boolean existsByPhone(String phone);
 
+    @Query("SELECT p FROM Patient p WHERE LOWER(p.fullName) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<Patient> findByName(@Param("name") String name);
+
     @Query("SELECT p FROM Patient p WHERE p.cpf = :cpf")
     Patient findByCpf(@Param("cpf") String cpf);
-
-
-    @Query("SELECT p FROM Patient p WHERE p.fullName = :name")
-    List<Patient> findByName(@Param("name") String name);
 
     @Query("SELECT p FROM Patient p WHERE p.phone = :phone")
     List<Patient> findByPhone(@Param("phone") String phone);

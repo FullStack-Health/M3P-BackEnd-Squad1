@@ -232,7 +232,7 @@ public class PatientService {
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
     })
     public List<PatientResponseDTO> getPatientsByName(String name) {
-        List<Patient> patients = patientRepository.findByName(name);
+        List<Patient> patients = patientRepository.findByName(name.trim());
         if (!patients.isEmpty()) {
             return patients.stream().map(patientMapper::toResponseDTO).collect(Collectors.toList());
         } else {

@@ -159,9 +159,13 @@ public class PatientController {
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes encontrados com sucesso\", \"patients\": [{\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}]}"))),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes não encontrados\"}")))
     })
-    public ResponseEntity<Map<String, Object>> getPatientsByName(@PathVariable String name) {
+    public ResponseEntity<Map<String, Object>> getPatientsByName(@PathVariable("name") String name) {
         try {
-            List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(name);
+            String decodedName = java.net.URLDecoder.decode(name, "UTF-8");
+            List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(decodedName);
+            if (responseDTOs.isEmpty()) {
+                return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
