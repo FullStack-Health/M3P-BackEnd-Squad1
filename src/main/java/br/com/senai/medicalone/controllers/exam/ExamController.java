@@ -2,6 +2,7 @@ package br.com.senai.medicalone.controllers.exam;
 
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
+import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.ExamNotFoundException;
@@ -15,13 +16,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/exames")
@@ -29,6 +35,9 @@ public class ExamController {
 
     @Autowired
     private ExamService examService;
+
+    @Autowired
+    private PagedResourcesAssembler<ExamResponseDTO> pagedResourcesAssembler;
 
     @PostMapping
     @Operation(summary = "Criar um novo exame", description = "Endpoint para criar um novo exame")
@@ -127,8 +136,23 @@ public class ExamController {
         }
 
         Page<ExamResponseDTO> responseDTOs = examService.listExams(name, patientId, pageable);
-        return new ResponseEntity<>(Map.of("message", "Exames encontrados com sucesso", "exams", responseDTOs), HttpStatus.OK);
-    }
+        PagedModel<EntityModel<ExamResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(responseDTOs);
+        List<ExamResponseDTO> exams = pagedModel.getContent().stream()
+                .map(EntityModel::getContent)
+                .collect(Collectors.toList());
 
+        Map<String, Object> response = Map.of(
+                "message", "Exames encontrados com sucesso",
+                "exams", exams,
+                "page", Map.of(
+                        "size", responseDTOs.getSize(),
+                        "totalElements", responseDTOs.getTotalElements(),
+                        "totalPages", responseDTOs.getTotalPages(),
+                        "number", responseDTOs.getNumber()
+                )
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 }
