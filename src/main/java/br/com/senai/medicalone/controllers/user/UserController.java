@@ -130,8 +130,14 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuários encontrados com sucesso\", \"users\": [{\"id\": 1, \"name\": \"John Doe\", \"email\": \"user@example.com\", \"birthDate\": \"1990-01-01\", \"phone\": \"(99) 9 9999-9999\", \"cpf\": \"123.456.789-00\", \"role\": \"ADMIN\"}]}")))
     })
-    public ResponseEntity<Map<String, Object>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        Page<UserResponseDTO> usersPage = userService.findAllUsers(PageRequest.of(page, size));
+    public ResponseEntity<Map<String, Object>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email) {
+
+        Page<UserResponseDTO> usersPage = userService.findAllUsers(PageRequest.of(page, size), id, name, email);
         return new ResponseEntity<>(Map.of("message", "Usuários encontrados com sucesso", "users", usersPage), HttpStatus.OK);
     }
 

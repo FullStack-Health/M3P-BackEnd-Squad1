@@ -251,6 +251,7 @@ public class UserService {
         dto.setCpf(user.getCpf());
         dto.setRole(user.getRole());
         dto.setPatientId(user.getRole().equals(RoleType.PACIENTE) ? user.getPatientId() : null);
+        dto.setMaskedPassword(maskPassword(user.getPassword()));
         return dto;
     }
 
@@ -273,5 +274,18 @@ public class UserService {
         user.setPhone(null);
         user.setCpf(null);
         return user;
+    }
+
+    public Page<UserResponseDTO> findAllUsers(Pageable pageable, Long id, String name, String email) {
+        Page<User> usersPage;
+        if (id != null || name != null || email != null) {
+            usersPage = userRepository.findByIdOrNameOrEmail(id, name, email, pageable);
+        } else {
+            usersPage = userRepository.findAll(pageable);
+        }
+        List<UserResponseDTO> filteredUsers = usersPage.stream()
+                .map(this::convertToUserResponseDTO)
+                .collect(Collectors.toList());
+        return new PageImpl<>(filteredUsers, pageable, usersPage.getTotalElements());
     }
 }
