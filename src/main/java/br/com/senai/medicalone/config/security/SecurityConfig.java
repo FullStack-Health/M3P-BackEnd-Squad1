@@ -45,8 +45,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/pre-registro").permitAll()
 
                         //Prontuarios
+                        .requestMatchers(HttpMethod.GET, "/api/pacientes/{id}/prontuarios").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
                         .requestMatchers(HttpMethod.GET, "/api/pacientes/prontuarios").hasAnyRole("ADMIN", "MEDICO")
-                        .requestMatchers(HttpMethod.GET, "/api/pacientes/{id}/prontuarios").hasAnyRole("ADMIN", "MEDICO")
+
 
                         //exames
                         .requestMatchers(HttpMethod.GET, "/api/exames/**").hasAnyRole("ADMIN", "MEDICO", "PACIENTE")
