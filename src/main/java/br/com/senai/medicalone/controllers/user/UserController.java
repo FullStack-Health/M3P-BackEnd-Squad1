@@ -21,12 +21,17 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -35,6 +40,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PagedResourcesAssembler<UserResponseDTO> pagedResourcesAssembler;
 
     @PostMapping("/pre-registro")
     @Operation(summary = "Pre registro de um usuario", description = "Endpoint para pré-registrar um usuário")
@@ -138,7 +146,23 @@ public class UserController {
             @RequestParam(required = false) String email) {
 
         Page<UserResponseDTO> usersPage = userService.findAllUsers(PageRequest.of(page, size), id, name, email);
-        return new ResponseEntity<>(Map.of("message", "Usuários encontrados com sucesso", "users", usersPage), HttpStatus.OK);
+        PagedModel<EntityModel<UserResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(usersPage);
+        List<UserResponseDTO> users = pagedModel.getContent().stream()
+                .map(EntityModel::getContent)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = Map.of(
+                "message", "Usuários encontrados com sucesso",
+                "users", users,
+                "page", Map.of(
+                        "size", usersPage.getSize(),
+                        "totalElements", usersPage.getTotalElements(),
+                        "totalPages", usersPage.getTotalPages(),
+                        "number", usersPage.getNumber()
+                )
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/login")

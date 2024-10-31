@@ -17,15 +17,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pacientes")
@@ -37,6 +40,9 @@ public class PatientController {
 
     @Autowired
     private PatientRecordService patientRecordService;
+
+    @Autowired
+    private PagedResourcesAssembler<PatientResponseDTO> pagedResourcesAssembler;
 
     @PostMapping
     @Operation(summary = "Cria um paciente", description = "Endpoint para criar um novo paciente")
@@ -112,7 +118,24 @@ public class PatientController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PatientResponseDTO> responseDTOs = patientService.getAllPatients(pageable);
-        return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
+        PagedModel<EntityModel<PatientResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(responseDTOs);
+
+        List<PatientResponseDTO> patients = pagedModel.getContent().stream()
+                .map(EntityModel::getContent)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = Map.of(
+                "message", "Pacientes encontrados com sucesso",
+                "patients", patients,
+                "page", Map.of(
+                        "size", responseDTOs.getSize(),
+                        "totalElements", responseDTOs.getTotalElements(),
+                        "totalPages", responseDTOs.getTotalPages(),
+                        "number", responseDTOs.getNumber()
+                )
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/cpf/{cpf}")
