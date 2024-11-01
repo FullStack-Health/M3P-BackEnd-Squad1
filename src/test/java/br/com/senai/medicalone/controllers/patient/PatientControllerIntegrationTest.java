@@ -199,7 +199,11 @@ public class PatientControllerIntegrationTest {
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Pacientes encontrados com sucesso"))
-                .andExpect(jsonPath("$.patients.content[0].fullName").value("John Doe"));
+                .andExpect(jsonPath("$.patients[0].fullName").value("John Doe"))
+                .andExpect(jsonPath("$.page.size").value(10))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.page.totalPages").value(1))
+                .andExpect(jsonPath("$.page.number").value(0));
     }
 
     @Test
