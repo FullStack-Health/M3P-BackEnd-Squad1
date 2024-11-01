@@ -56,17 +56,24 @@ public class PatientService {
     public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
         validatePatientRequestDTO(patientRequestDTO);
 
-        if (patientRepository.existsByEmail(patientRequestDTO.getEmail()) ||
-                patientRepository.existsByCpf(patientRequestDTO.getCpf()) ||
-                patientRepository.existsByPhone(patientRequestDTO.getPhone())) {
+        String cleanedPhone = cleanString(patientRequestDTO.getPhone());
+        String cleanedCpf = cleanString(patientRequestDTO.getCpf());
+
+        boolean emailExists = patientRepository.existsByEmail(patientRequestDTO.getEmail());
+        boolean cpfExists = patientRepository.existsByCpf(cleanedCpf);
+        boolean phoneExists = patientRepository.existsByPhone(cleanedPhone);
+
+        if (emailExists || cpfExists || phoneExists) {
             throw new PatientAlreadyExistsException("Paciente já cadastrado");
         }
 
         try {
             Patient patient = patientMapper.toEntity(patientRequestDTO);
-            patient.setPassword(passwordEncoder.encode(patient.getCpf()));
+            patient.setPassword(passwordEncoder.encode(cleanedCpf));
+            patient.setCpf(cleanedCpf);
+            patient.setPhone(cleanedPhone);
 
-            Optional<User> existingUser = userRepository.findByEmailOrCpf(patientRequestDTO.getEmail(), patientRequestDTO.getCpf());
+            Optional<User> existingUser = userRepository.findByEmailOrCpf(patientRequestDTO.getEmail(), cleanedCpf);
             if (existingUser.isPresent()) {
                 patient.setUser(existingUser.get());
             } else {
@@ -74,9 +81,9 @@ public class PatientService {
                 userRequestDTO.setName(patient.getFullName());
                 userRequestDTO.setEmail(patient.getEmail());
                 userRequestDTO.setBirthDate(patient.getBirthDate());
-                userRequestDTO.setPhone(patient.getPhone());
-                userRequestDTO.setCpf(patient.getCpf());
-                userRequestDTO.setPassword(patient.getCpf());
+                userRequestDTO.setPhone(cleanedPhone);
+                userRequestDTO.setCpf(cleanedCpf);
+                userRequestDTO.setPassword(cleanedCpf);
                 userRequestDTO.setRole(RoleType.PACIENTE);
 
                 UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
@@ -97,6 +104,9 @@ public class PatientService {
         }
     }
 
+    private String cleanString(String value) {
+        return value != null ? value.replaceAll("\\D", "") : null;
+    }
 
     @Operation(summary = "Obter paciente pelo ID", description = "Método para obter um paciente pelo ID")
     @ApiResponses({
@@ -232,7 +242,7 @@ public class PatientService {
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados")
     })
     public List<PatientResponseDTO> getPatientsByName(String name) {
-        List<Patient> patients = patientRepository.findByName(name);
+        List<Patient> patients = patientRepository.findByName(name.trim());
         if (!patients.isEmpty()) {
             return patients.stream().map(patientMapper::toResponseDTO).collect(Collectors.toList());
         } else {
@@ -251,6 +261,20 @@ public class PatientService {
             return patients.stream().map(patientMapper::toResponseDTO).collect(Collectors.toList());
         } else {
             throw new PatientNotFoundException("Pacientes não encontrados com o telefone: " + phone);
+        }
+    }
+
+    @Operation(summary = "Obter paciente pelo email", description = "Método para obter um paciente pelo email")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
+    })
+    public PatientResponseDTO getPatientByEmail(String email) {
+        Patient patient = patientRepository.findByEmail(email);
+        if (patient != null) {
+            return patientMapper.toResponseDTO(patient);
+        } else {
+            throw new PatientNotFoundException("Paciente não encontrado com email: " + email);
         }
     }
 }

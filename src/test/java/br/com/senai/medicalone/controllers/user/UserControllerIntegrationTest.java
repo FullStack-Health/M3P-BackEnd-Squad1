@@ -199,7 +199,11 @@ public class UserControllerIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Usuários encontrados com sucesso"))
-                .andExpect(jsonPath("$.users.content[0].email").value("test@example.com"));
+                .andExpect(jsonPath("$.users[0].email").value("test@example.com"))
+                .andExpect(jsonPath("$.page.size").value(10))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.page.totalPages").value(1))
+                .andExpect(jsonPath("$.page.number").value(0));
     }
 
     @Test

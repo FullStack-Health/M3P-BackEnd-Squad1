@@ -17,15 +17,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pacientes")
@@ -37,6 +40,9 @@ public class PatientController {
 
     @Autowired
     private PatientRecordService patientRecordService;
+
+    @Autowired
+    private PagedResourcesAssembler<PatientResponseDTO> pagedResourcesAssembler;
 
     @PostMapping
     @Operation(summary = "Cria um paciente", description = "Endpoint para criar um novo paciente")
@@ -112,7 +118,24 @@ public class PatientController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PatientResponseDTO> responseDTOs = patientService.getAllPatients(pageable);
-        return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
+        PagedModel<EntityModel<PatientResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(responseDTOs);
+
+        List<PatientResponseDTO> patients = pagedModel.getContent().stream()
+                .map(EntityModel::getContent)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = Map.of(
+                "message", "Pacientes encontrados com sucesso",
+                "patients", patients,
+                "page", Map.of(
+                        "size", responseDTOs.getSize(),
+                        "totalElements", responseDTOs.getTotalElements(),
+                        "totalPages", responseDTOs.getTotalPages(),
+                        "number", responseDTOs.getNumber()
+                )
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/cpf/{cpf}")
@@ -136,9 +159,13 @@ public class PatientController {
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes encontrados com sucesso\", \"patients\": [{\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}]}"))),
             @ApiResponse(responseCode = "404", description = "Pacientes não encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes não encontrados\"}")))
     })
-    public ResponseEntity<Map<String, Object>> getPatientsByName(@PathVariable String name) {
+    public ResponseEntity<Map<String, Object>> getPatientsByName(@PathVariable("name") String name) {
         try {
-            List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(name);
+            String decodedName = java.net.URLDecoder.decode(name, "UTF-8");
+            List<PatientResponseDTO> responseDTOs = patientService.getPatientsByName(decodedName);
+            if (responseDTOs.isEmpty()) {
+                return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
@@ -157,6 +184,21 @@ public class PatientController {
             return new ResponseEntity<>(Map.of("message", "Pacientes encontrados com sucesso", "patients", responseDTOs), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Pacientes não encontrados"), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/email/{email}")
+    @Operation(summary = "Busca paciente por email", description = "Endpoint para obter um paciente pelo email")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente encontrado com sucesso\", \"patient\": {\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\", \"email\": \"john.doe@example.com\"}}"))),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
+    })
+    public ResponseEntity<Map<String, Object>> getPatientByEmail(@PathVariable String email) {
+        try {
+            PatientResponseDTO responseDTO = patientService.getPatientByEmail(email);
+            return new ResponseEntity<>(Map.of("message", "Paciente encontrado com sucesso", "patient", responseDTO), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
         }
     }
 

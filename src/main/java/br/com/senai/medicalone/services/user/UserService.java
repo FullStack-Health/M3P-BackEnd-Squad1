@@ -241,7 +241,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public UserResponseDTO convertToUserResponseDTO(User user) {
+    private UserResponseDTO convertToUserResponseDTO(User user) {
         UserResponseDTO dto = new UserResponseDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
@@ -251,8 +251,10 @@ public class UserService {
         dto.setCpf(user.getCpf());
         dto.setRole(user.getRole());
         dto.setPatientId(user.getRole().equals(RoleType.PACIENTE) ? user.getPatientId() : null);
+        dto.setMaskedPassword(maskPassword(user.getPassword()));
         return dto;
     }
+
 
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
@@ -273,5 +275,15 @@ public class UserService {
         user.setPhone(null);
         user.setCpf(null);
         return user;
+    }
+
+    public Page<UserResponseDTO> findAllUsers(Pageable pageable, Long id, String name, String email) {
+        Page<User> usersPage;
+        if (id != null || name != null || email != null) {
+            usersPage = userRepository.findByIdOrNameOrEmail(id, name, email, pageable);
+        } else {
+            usersPage = userRepository.findAll(pageable);
+        }
+        return usersPage.map(this::convertToUserResponseDTO);
     }
 }

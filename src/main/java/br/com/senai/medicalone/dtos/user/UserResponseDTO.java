@@ -31,4 +31,7 @@ public class UserResponseDTO {
 
     @Schema(description = "ID do paciente associado", example = "1")
     private Long patientId;
+
+    @Schema(description = "Senha mascarada do usuário", example = "pass****")
+    private String maskedPassword;
 }
