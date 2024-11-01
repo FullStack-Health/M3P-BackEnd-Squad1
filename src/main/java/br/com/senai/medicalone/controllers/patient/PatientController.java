@@ -187,6 +187,21 @@ public class PatientController {
         }
     }
 
+    @GetMapping("/email/{email}")
+    @Operation(summary = "Busca paciente por email", description = "Endpoint para obter um paciente pelo email")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Paciente encontrado com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente encontrado com sucesso\", \"patient\": {\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\", \"email\": \"john.doe@example.com\"}}"))),
+            @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
+    })
+    public ResponseEntity<Map<String, Object>> getPatientByEmail(@PathVariable String email) {
+        try {
+            PatientResponseDTO responseDTO = patientService.getPatientByEmail(email);
+            return new ResponseEntity<>(Map.of("message", "Paciente encontrado com sucesso", "patient", responseDTO), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping("/prontuarios")
     @Operation(summary = "Busca todos os prontuarios", description = "Endpoint para obter todos os prontuários de pacientes")
     @ApiResponses({
