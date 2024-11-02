@@ -1,7 +1,6 @@
 package br.com.senai.medicalone.repositories.exam;
 
 import br.com.senai.medicalone.entities.exam.Exam;
-import br.com.senai.medicalone.entities.patient.Address;
 import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +65,14 @@ public class ExamRepositoryTest {
         patient.setHealthInsurance("Unimed");
         patient.setHealthInsuranceNumber("1234567890");
         patient.setHealthInsuranceValidity(LocalDate.of(2025, 12, 31));
-        patient.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
+        patient.setZipCode("12345-678");
+        patient.setCity("São Paulo");
+        patient.setState("SP");
+        patient.setStreet("Rua Exemplo");
+        patient.setNumber("123");
+        patient.setComplement("Apto 101");
+        patient.setNeighborhood("Centro");
+        patient.setReferencePoint("Próximo ao mercado");
         patient.setPassword("password");
         return patientRepository.save(patient);
     }

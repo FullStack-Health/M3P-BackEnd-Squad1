@@ -5,7 +5,6 @@ import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
 import br.com.senai.medicalone.dtos.user.UserRequestDTO;
 import br.com.senai.medicalone.dtos.user.UserResponseDTO;
 import br.com.senai.medicalone.entities.patient.Patient;
-import br.com.senai.medicalone.entities.patient.Address;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
@@ -21,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -74,7 +72,14 @@ class PatientServiceTest {
         requestDTO.setPhone("99999999999");
         requestDTO.setPlaceOfBirth("São Paulo");
         requestDTO.setEmergencyContact("99999999999");
-        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
+        requestDTO.setZipCode("12345-678");
+        requestDTO.setCity("São Paulo");
+        requestDTO.setState("SP");
+        requestDTO.setStreet("Rua Exemplo");
+        requestDTO.setNumber("123");
+        requestDTO.setComplement("Apto 101");
+        requestDTO.setNeighborhood("Centro");
+        requestDTO.setReferencePoint("Próximo ao mercado");
 
         Patient patient = new Patient();
         patient.setId(1L);
@@ -89,7 +94,14 @@ class PatientServiceTest {
         patient.setPhone("99999999999");
         patient.setPlaceOfBirth("São Paulo");
         patient.setEmergencyContact("99999999999");
-        patient.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
+        patient.setZipCode("12345-678");
+        patient.setCity("São Paulo");
+        patient.setState("SP");
+        patient.setStreet("Rua Exemplo");
+        patient.setNumber("123");
+        patient.setComplement("Apto 101");
+        patient.setNeighborhood("Centro");
+        patient.setReferencePoint("Próximo ao mercado");
 
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(1L);
@@ -122,7 +134,14 @@ class PatientServiceTest {
         requestDTO.setPhone("99999999999");
         requestDTO.setPlaceOfBirth("São Paulo");
         requestDTO.setEmergencyContact("99999999999");
-        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
+        requestDTO.setZipCode("12345-678");
+        requestDTO.setCity("São Paulo");
+        requestDTO.setState("SP");
+        requestDTO.setStreet("Rua Exemplo");
+        requestDTO.setNumber("123");
+        requestDTO.setComplement("Apto 101");
+        requestDTO.setNeighborhood("Centro");
+        requestDTO.setReferencePoint("Próximo ao mercado");
 
         when(patientRepository.existsByEmail(anyString())).thenReturn(true);
 
@@ -173,7 +192,14 @@ class PatientServiceTest {
         requestDTO.setHealthInsurance("Amil");
         requestDTO.setHealthInsuranceNumber("9876543210");
         requestDTO.setHealthInsuranceValidity(LocalDate.of(2026, 12, 31));
-        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "456", "Casa", "Centro", "Perto da farmácia"));
+        requestDTO.setZipCode("12345-678");
+        requestDTO.setCity("São Paulo");
+        requestDTO.setState("SP");
+        requestDTO.setStreet("Rua Exemplo");
+        requestDTO.setNumber("456");
+        requestDTO.setComplement("Casa");
+        requestDTO.setNeighborhood("Centro");
+        requestDTO.setReferencePoint("Perto da farmácia");
 
         Patient existingPatient = new Patient();
         existingPatient.setId(id);
@@ -213,7 +239,14 @@ class PatientServiceTest {
         requestDTO.setHealthInsurance("Amil");
         requestDTO.setHealthInsuranceNumber("9876543210");
         requestDTO.setHealthInsuranceValidity(LocalDate.of(2026, 12, 31));
-        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "456", "Casa", "Centro", "Perto da farmácia"));
+        requestDTO.setZipCode("12345-678");
+        requestDTO.setCity("São Paulo");
+        requestDTO.setState("SP");
+        requestDTO.setStreet("Rua Exemplo");
+        requestDTO.setNumber("456");
+        requestDTO.setComplement("Casa");
+        requestDTO.setNeighborhood("Centro");
+        requestDTO.setReferencePoint("Perto da farmácia");
 
         when(patientRepository.findById(id)).thenReturn(Optional.empty());
 
@@ -365,7 +398,14 @@ class PatientServiceTest {
         requestDTO.setPhone("99999999999");
         requestDTO.setPlaceOfBirth("São Paulo");
         requestDTO.setEmergencyContact("99999999999");
-        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado")); // Adicionando o campo obrigatório
+        requestDTO.setZipCode("12345-678");
+        requestDTO.setCity("São Paulo");
+        requestDTO.setState("SP");
+        requestDTO.setStreet("Rua Exemplo");
+        requestDTO.setNumber("123");
+        requestDTO.setComplement("Apto 101");
+        requestDTO.setNeighborhood("Centro");
+        requestDTO.setReferencePoint("Próximo ao mercado");
 
         when(patientRepository.existsByEmail(anyString())).thenReturn(true);
 
@@ -386,7 +426,14 @@ class PatientServiceTest {
         requestDTO.setEmail("john.doe@example.com");
         requestDTO.setPlaceOfBirth("São Paulo");
         requestDTO.setEmergencyContact("99999999999");
-        requestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado")); // Adicionando o campo obrigatório
+        requestDTO.setZipCode("12345-678");
+        requestDTO.setCity("São Paulo");
+        requestDTO.setState("SP");
+        requestDTO.setStreet("Rua Exemplo");
+        requestDTO.setNumber("123");
+        requestDTO.setComplement("Apto 101");
+        requestDTO.setNeighborhood("Centro");
+        requestDTO.setReferencePoint("Próximo ao mercado");
 
         when(patientRepository.existsByCpf(anyString())).thenReturn(true);
 
