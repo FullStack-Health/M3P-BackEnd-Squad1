@@ -2,7 +2,6 @@ package br.com.senai.medicalone.controllers.patient;
 
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
-import br.com.senai.medicalone.entities.patient.Address;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
@@ -104,7 +103,14 @@ public class PatientControllerIntegrationTest {
         patientRequestDTO.setHealthInsurance("Unimed");
         patientRequestDTO.setHealthInsuranceNumber("1234567890");
         patientRequestDTO.setHealthInsuranceValidity(LocalDate.parse("2025-12-31"));
-        patientRequestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
+        patientRequestDTO.setZipCode("12345-678");
+        patientRequestDTO.setCity("São Paulo");
+        patientRequestDTO.setState("SP");
+        patientRequestDTO.setStreet("Rua Exemplo");
+        patientRequestDTO.setNumber("123");
+        patientRequestDTO.setComplement("Apto 101");
+        patientRequestDTO.setNeighborhood("Centro");
+        patientRequestDTO.setReferencePoint("Próximo ao mercado");
         return patientRequestDTO;
     }
 
@@ -133,14 +139,14 @@ public class PatientControllerIntegrationTest {
                 .andExpect(jsonPath("$.patient.healthInsurance").value("Unimed"))
                 .andExpect(jsonPath("$.patient.healthInsuranceNumber").value("1234567890"))
                 .andExpect(jsonPath("$.patient.healthInsuranceValidity").value("2025-12-31"))
-                .andExpect(jsonPath("$.patient.address.zipCode").value("12345678"))
-                .andExpect(jsonPath("$.patient.address.city").value("São Paulo"))
-                .andExpect(jsonPath("$.patient.address.state").value("SP"))
-                .andExpect(jsonPath("$.patient.address.street").value("Rua Exemplo"))
-                .andExpect(jsonPath("$.patient.address.number").value("123"))
-                .andExpect(jsonPath("$.patient.address.complement").value("Apto 101"))
-                .andExpect(jsonPath("$.patient.address.neighborhood").value("Centro"))
-                .andExpect(jsonPath("$.patient.address.referencePoint").value("Próximo ao mercado"));
+                .andExpect(jsonPath("$.patient.zipCode").value("12345678"))
+                .andExpect(jsonPath("$.patient.city").value("São Paulo"))
+                .andExpect(jsonPath("$.patient.state").value("SP"))
+                .andExpect(jsonPath("$.patient.street").value("Rua Exemplo"))
+                .andExpect(jsonPath("$.patient.number").value("123"))
+                .andExpect(jsonPath("$.patient.complement").value("Apto 101"))
+                .andExpect(jsonPath("$.patient.neighborhood").value("Centro"))
+                .andExpect(jsonPath("$.patient.referencePoint").value("Próximo ao mercado"));
     }
 
     @Test

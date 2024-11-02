@@ -3,8 +3,6 @@ package br.com.senai.medicalone.controllers.exam;
 import br.com.senai.medicalone.dtos.exam.ExamRequestDTO;
 import br.com.senai.medicalone.dtos.exam.ExamResponseDTO;
 import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
-import br.com.senai.medicalone.entities.patient.Address;
-import br.com.senai.medicalone.entities.patient.Patient;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
@@ -24,10 +22,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -59,7 +57,6 @@ public class ExamControllerIntegrationTest {
     public void setUp() throws Exception {
         patientRepository.deleteAll();
         userRepository.deleteAll();
-
 
         User user = new User();
         user.setEmail("admin@example.com");
@@ -101,7 +98,14 @@ public class ExamControllerIntegrationTest {
         patientRequestDTO.setHealthInsurance("Unimed");
         patientRequestDTO.setHealthInsuranceNumber("1234567890");
         patientRequestDTO.setHealthInsuranceValidity(LocalDate.parse("2025-12-31"));
-        patientRequestDTO.setAddress(new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado"));
+        patientRequestDTO.setZipCode("12345-678");
+        patientRequestDTO.setCity("São Paulo");
+        patientRequestDTO.setState("SP");
+        patientRequestDTO.setStreet("Rua Exemplo");
+        patientRequestDTO.setNumber("123");
+        patientRequestDTO.setComplement("Apto 101");
+        patientRequestDTO.setNeighborhood("Centro");
+        patientRequestDTO.setReferencePoint("Próximo ao mercado");
 
         String response = mockMvc.perform(post("/api/pacientes")
                         .contentType(MediaType.APPLICATION_JSON)

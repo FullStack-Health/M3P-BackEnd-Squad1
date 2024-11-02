@@ -1,6 +1,5 @@
 package br.com.senai.medicalone.repositories.patient;
 
-import br.com.senai.medicalone.entities.patient.Address;
 import br.com.senai.medicalone.entities.patient.Patient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ public class PatientRepositoryTest {
     public void setUp() {
         patientRepository.deleteAll();
 
-        Address address = new Address("12345-678", "São Paulo", "SP", "Rua Exemplo", "123", "Apto 101", "Centro", "Próximo ao mercado");
         patient = Patient.builder()
                 .id(null)
                 .fullName("John Doe")
@@ -45,7 +43,14 @@ public class PatientRepositoryTest {
                 .healthInsurance("Unimed")
                 .healthInsuranceNumber("1234567890")
                 .healthInsuranceValidity(LocalDate.of(2025, 12, 31))
-                .address(address)
+                .zipCode("12345-678")
+                .city("São Paulo")
+                .state("SP")
+                .street("Rua Exemplo")
+                .number("123")
+                .complement("Apto 101")
+                .neighborhood("Centro")
+                .referencePoint("Próximo ao mercado")
                 .password("password")
                 .build();
     }
