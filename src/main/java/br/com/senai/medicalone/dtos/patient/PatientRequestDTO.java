@@ -1,6 +1,5 @@
 package br.com.senai.medicalone.dtos.patient;
 
-import br.com.senai.medicalone.entities.patient.Address;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -10,6 +9,7 @@ import java.util.List;
 @Data
 @Schema(description = "DTO para requisição de criação/atualização de paciente")
 public class PatientRequestDTO {
+
     @Schema(description = "Nome completo do paciente", example = "John Doe")
     private String fullName;
 
@@ -58,6 +58,27 @@ public class PatientRequestDTO {
     @Schema(description = "Validade do convênio do paciente", example = "2025-12-31")
     private LocalDate healthInsuranceValidity;
 
-    @Schema(description = "Endereço do paciente")
-    private Address address;
+    @Schema(description = "CEP do endereço", example = "12345-678")
+    private String zipCode;
+
+    @Schema(description = "Cidade do endereço", example = "São Paulo")
+    private String city;
+
+    @Schema(description = "Estado do endereço", example = "SP")
+    private String state;
+
+    @Schema(description = "Logradouro do endereço", example = "Rua Exemplo")
+    private String street;
+
+    @Schema(description = "Número do endereço", example = "123")
+    private String number;
+
+    @Schema(description = "Complemento do endereço", example = "Apto 101")
+    private String complement;
+
+    @Schema(description = "Bairro do endereço", example = "Centro")
+    private String neighborhood;
+
+    @Schema(description = "Ponto de referência do endereço", example = "Próximo ao mercado")
+    private String referencePoint;
 }

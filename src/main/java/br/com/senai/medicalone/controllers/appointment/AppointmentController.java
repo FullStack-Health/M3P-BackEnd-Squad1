@@ -127,10 +127,11 @@ public class AppointmentController {
     })
     public ResponseEntity<Map<String, Object>> listAppointments(
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long patientId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Long patientId = null;
+
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof User) {

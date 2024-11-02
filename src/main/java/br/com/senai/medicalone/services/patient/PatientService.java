@@ -199,26 +199,23 @@ public class PatientService {
         if (patientRequestDTO.getEmergencyContact() == null || patientRequestDTO.getEmergencyContact().isEmpty()) {
             throw new BadRequestException("dados ausentes: emergencyContact");
         }
-        if (patientRequestDTO.getAddress() == null) {
-            throw new BadRequestException("dados ausentes: address");
+        if (patientRequestDTO.getZipCode() == null || patientRequestDTO.getZipCode().isEmpty()) {
+            throw new BadRequestException("dados ausentes: zipCode");
         }
-        if (patientRequestDTO.getAddress().getZipCode() == null || patientRequestDTO.getAddress().getZipCode().isEmpty()) {
-            throw new BadRequestException("dados ausentes: address.zipCode");
+        if (patientRequestDTO.getCity() == null || patientRequestDTO.getCity().isEmpty()) {
+            throw new BadRequestException("dados ausentes: city");
         }
-        if (patientRequestDTO.getAddress().getCity() == null || patientRequestDTO.getAddress().getCity().isEmpty()) {
-            throw new BadRequestException("dados ausentes: address.city");
+        if (patientRequestDTO.getState() == null || patientRequestDTO.getState().isEmpty()) {
+            throw new BadRequestException("dados ausentes: state");
         }
-        if (patientRequestDTO.getAddress().getState() == null || patientRequestDTO.getAddress().getState().isEmpty()) {
-            throw new BadRequestException("dados ausentes: address.state");
+        if (patientRequestDTO.getStreet() == null || patientRequestDTO.getStreet().isEmpty()) {
+            throw new BadRequestException("dados ausentes: street");
         }
-        if (patientRequestDTO.getAddress().getStreet() == null || patientRequestDTO.getAddress().getStreet().isEmpty()) {
-            throw new BadRequestException("dados ausentes: address.street");
+        if (patientRequestDTO.getNumber() == null || patientRequestDTO.getNumber().isEmpty()) {
+            throw new BadRequestException("dados ausentes: number");
         }
-        if (patientRequestDTO.getAddress().getNumber() == null || patientRequestDTO.getAddress().getNumber().isEmpty()) {
-            throw new BadRequestException("dados ausentes: address.number");
-        }
-        if (patientRequestDTO.getAddress().getNeighborhood() == null || patientRequestDTO.getAddress().getNeighborhood().isEmpty()) {
-            throw new BadRequestException("dados ausentes: address.neighborhood");
+        if (patientRequestDTO.getNeighborhood() == null || patientRequestDTO.getNeighborhood().isEmpty()) {
+            throw new BadRequestException("dados ausentes: neighborhood");
         }
     }
 

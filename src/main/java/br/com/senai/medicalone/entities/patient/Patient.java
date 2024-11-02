@@ -5,10 +5,7 @@ import br.com.senai.medicalone.entities.exam.Exam;
 import br.com.senai.medicalone.entities.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -76,8 +73,9 @@ public class Patient {
     private String phone;
 
     @Email
+    @NotBlank
     @Size(max = 255)
-    @Column(length = 255)
+    @Column(nullable = false, length = 255)
     @Schema(description = "Email do paciente", example = "user@example.com")
     private String email;
 
@@ -95,6 +93,7 @@ public class Patient {
     @ElementCollection
     @CollectionTable(name = "tb_patient_allergies", joinColumns = @JoinColumn(name = "patient_id"))
     @Column(name = "allergy")
+    @NotEmpty
     @Schema(description = "Lista de alergias do paciente")
     private List<String> allergies;
 
@@ -114,9 +113,36 @@ public class Patient {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate healthInsuranceValidity;
 
-    @Embedded
-    @Schema(description = "Endereço do paciente")
-    private Address address;
+    @NotBlank
+    @Pattern(regexp = "\\d{5}-\\d{3}")
+    @Schema(description = "CEP do endereço", example = "12345-678")
+    private String zipCode;
+
+    @NotBlank
+    @Schema(description = "Cidade do endereço", example = "São Paulo")
+    private String city;
+
+    @NotBlank
+    @Schema(description = "Estado do endereço", example = "SP")
+    private String state;
+
+    @NotBlank
+    @Schema(description = "Logradouro do endereço", example = "Rua Exemplo")
+    private String street;
+
+    @NotBlank
+    @Schema(description = "Número do endereço", example = "123")
+    private String number;
+
+    @Schema(description = "Complemento do endereço", example = "Apto 101")
+    private String complement;
+
+    @NotBlank
+    @Schema(description = "Bairro do endereço", example = "Centro")
+    private String neighborhood;
+
+    @Schema(description = "Ponto de referência do endereço", example = "Próximo ao mercado")
+    private String referencePoint;
 
     @NotBlank
     @Column(nullable = false)
@@ -144,9 +170,7 @@ public class Patient {
         this.emergencyContact = cleanString(this.emergencyContact);
         this.healthInsuranceNumber = cleanString(this.healthInsuranceNumber);
         this.rg = cleanString(this.rg);
-        if (this.address != null) {
-            this.address.setZipCode(cleanString(this.address.getZipCode()));
-        }
+        this.zipCode = cleanString(this.zipCode);
     }
 
     @Schema(description = "Método para limpar uma string, removendo todos os caracteres não numéricos")
