@@ -16,6 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByCpf(String cpf);
     Optional<User> findByEmailOrCpf(String email, String cpf);
+    void delete(User user);
 
 
     @Query("SELECT u FROM User u WHERE (:id IS NULL OR u.id = :id) AND (:name IS NULL OR u.name LIKE %:name%) AND (:email IS NULL OR u.email LIKE %:email%)")
