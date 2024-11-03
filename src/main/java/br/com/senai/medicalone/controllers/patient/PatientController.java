@@ -121,7 +121,7 @@ public class PatientController {
     public ResponseEntity<Map<String, Object>> getAllPatients(
             @RequestParam(required = false) String searchTerm,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "12") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PatientResponseDTO> responseDTOs = patientService.getAllPatientsFiltered(searchTerm,pageable);
         PagedModel<EntityModel<PatientResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(responseDTOs);
@@ -217,7 +217,7 @@ public class PatientController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long id,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "12") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PatientRecordDTO> records = patientRecordService.getAllPatientRecords(name, id, pageable);
         return new ResponseEntity<>(Map.of("message", "Prontuários encontrados com sucesso", "records", records), HttpStatus.OK);
