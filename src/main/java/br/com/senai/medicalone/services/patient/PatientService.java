@@ -168,6 +168,17 @@ public class PatientService {
         return patients.map(patientMapper::toResponseDTO);
     }
 
+    @Operation(summary = "Obter todos os pacientes com filtro de busca", description = "Método para obter todos os " +
+                                                                                          "pacientes")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso")
+    })
+    public Page<PatientResponseDTO> getAllPatientsFiltered(String searchTerm,
+                                                           Pageable pageable) {
+        Page<Patient> patients = patientRepository.findByFilter(searchTerm, pageable);
+        return patients.map(patientMapper::toResponseDTO);
+    }
+
     private void validatePatientRequestDTO(PatientRequestDTO patientRequestDTO) {
         if (patientRequestDTO.getFullName() == null || patientRequestDTO.getFullName().isEmpty()) {
             throw new BadRequestException("dados ausentes: fullName");

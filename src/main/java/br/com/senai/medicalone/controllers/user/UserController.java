@@ -4,6 +4,7 @@ import br.com.senai.medicalone.dtos.login.LoginRequestDTO;
 import br.com.senai.medicalone.dtos.user.ResetPasswordRequestDTO;
 import br.com.senai.medicalone.dtos.user.UserRequestDTO;
 import br.com.senai.medicalone.dtos.user.UserResponseDTO;
+import br.com.senai.medicalone.dtos.user.UserUpdateRequestDTO;
 import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
@@ -88,12 +89,9 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Role inválida ou dados ausentes", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Role inválida ou dados ausentes\"}"))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Usuário não encontrado\"}")))
     })
-    public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody UserRequestDTO userRequestDTO) {
-        if (userRequestDTO.getRole().equals(RoleType.PACIENTE)) {
-            return new ResponseEntity<>(Map.of("message", "Role inválida ou dados ausentes"), HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequestDTO userUpdateRequestDTO) {
         try {
-            UserResponseDTO updatedUser = userService.updateUser(id, userRequestDTO);
+            userService.updateUser(id, userUpdateRequestDTO);
             return new ResponseEntity<>(Map.of("message", "Usuário atualizado com sucesso"), HttpStatus.OK);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>(Map.of("message", "Usuário não encontrado"), HttpStatus.NOT_FOUND);

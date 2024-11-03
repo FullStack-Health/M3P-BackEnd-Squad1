@@ -2,6 +2,7 @@ package br.com.senai.medicalone.services.user;
 
 import br.com.senai.medicalone.dtos.user.UserRequestDTO;
 import br.com.senai.medicalone.dtos.user.UserResponseDTO;
+import br.com.senai.medicalone.dtos.user.UserUpdateRequestDTO;
 import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
@@ -140,17 +141,25 @@ public class UserService {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
             @ApiResponse(responseCode = "409", description = "Não é possível atualizar usuários com perfil PACIENTE")
     })
-    public UserResponseDTO updateUser(Long id, UserRequestDTO updatedUserDTO) {
+    public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO updatedUserDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
 
-        user.setName(updatedUserDTO.getName());
-        user.setEmail(updatedUserDTO.getEmail());
-        user.setBirthDate(updatedUserDTO.getBirthDate());
-        user.setPhone(updatedUserDTO.getPhone());
-        user.setCpf(updatedUserDTO.getCpf());
-        user.setPassword(passwordEncoder.encode(updatedUserDTO.getPassword()));
-        user.setRole(updatedUserDTO.getRole());
+        if (updatedUserDTO.getName() != null) {
+            user.setName(updatedUserDTO.getName());
+        }
+        if (updatedUserDTO.getEmail() != null) {
+            user.setEmail(updatedUserDTO.getEmail());
+        }
+        if (updatedUserDTO.getBirthDate() != null) {
+            user.setBirthDate(updatedUserDTO.getBirthDate());
+        }
+        if (updatedUserDTO.getPhone() != null) {
+            user.setPhone(updatedUserDTO.getPhone());
+        }
+        if (updatedUserDTO.getCpf() != null) {
+            user.setCpf(updatedUserDTO.getCpf());
+        }
 
         User updatedUser = userRepository.save(user);
         return convertToUserResponseDTO(updatedUser);
