@@ -114,15 +114,16 @@ public class PatientController {
             @ApiResponse(responseCode = "200", description = "Pacientes encontrados com sucesso", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Pacientes encontrados com sucesso\", \"patients\": [{\"id\": 1, \"name\": \"John Doe\", \"cpf\": \"123.456.789-00\", \"phone\": \"(99) 9 9999-9999\"}]}")))
     })
     public ResponseEntity<Map<String, Object>> getAllPatients(
+            @RequestParam(required = false) String searchTerm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<PatientResponseDTO> responseDTOs = patientService.getAllPatients(pageable);
+        Page<PatientResponseDTO> responseDTOs = patientService.getAllPatientsFiltered(searchTerm,pageable);
         PagedModel<EntityModel<PatientResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(responseDTOs);
 
         List<PatientResponseDTO> patients = pagedModel.getContent().stream()
-                .map(EntityModel::getContent)
-                .collect(Collectors.toList());
+                                                    .map(EntityModel::getContent)
+                                                    .collect(Collectors.toList());
 
         Map<String, Object> response = Map.of(
                 "message", "Pacientes encontrados com sucesso",
