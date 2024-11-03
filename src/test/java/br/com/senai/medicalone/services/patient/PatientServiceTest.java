@@ -256,20 +256,25 @@ class PatientServiceTest {
     @Test
     void deletePatient_Success() {
         Long id = 1L;
+        Patient patient = new Patient();
+        patient.setId(id);
+        User user = new User();
+        patient.setUser(user);
 
-        when(patientRepository.existsById(id)).thenReturn(true);
+        when(patientRepository.findById(id)).thenReturn(Optional.of(patient));
 
         boolean result = patientService.deletePatient(id);
 
         assertTrue(result);
         verify(patientRepository, times(1)).deleteById(id);
+        verify(userRepository, times(1)).delete(user);
     }
 
     @Test
     void deletePatient_NotFound() {
         Long id = 1L;
 
-        when(patientRepository.existsById(id)).thenReturn(false);
+        lenient().when(patientRepository.existsById(id)).thenReturn(false);
 
         assertThrows(PatientNotFoundException.class, () -> patientService.deletePatient(id));
     }
