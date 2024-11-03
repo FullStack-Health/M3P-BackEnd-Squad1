@@ -2,6 +2,7 @@ package br.com.senai.medicalone.services.user;
 
 import br.com.senai.medicalone.dtos.user.UserRequestDTO;
 import br.com.senai.medicalone.dtos.user.UserResponseDTO;
+import br.com.senai.medicalone.dtos.user.UserUpdateRequestDTO;
 import br.com.senai.medicalone.entities.user.PreRegisterUser;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
@@ -137,17 +138,14 @@ public class UserServiceTest {
 
     @Test
     public void testUpdateUser_Success() {
-        UserRequestDTO updatedUserDTO = new UserRequestDTO();
+        UserUpdateRequestDTO updatedUserDTO = new UserUpdateRequestDTO();
         updatedUserDTO.setEmail("updated@example.com");
         updatedUserDTO.setName("Updated Name");
         updatedUserDTO.setBirthDate(LocalDate.now());
         updatedUserDTO.setPhone("987654321");
         updatedUserDTO.setCpf("98765432100");
-        updatedUserDTO.setPassword("newpassword");
-        updatedUserDTO.setRole(RoleType.ADMIN);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(passwordEncoder.encode(updatedUserDTO.getPassword())).thenReturn("encodedNewPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         UserResponseDTO result = userService.updateUser(1L, updatedUserDTO);
@@ -162,14 +160,13 @@ public class UserServiceTest {
 
     @Test
     public void testUpdateUser_UserNotFound() {
-        UserRequestDTO updatedUserDTO = new UserRequestDTO();
+        UserUpdateRequestDTO updatedUserDTO = new UserUpdateRequestDTO();
         updatedUserDTO.setEmail("updated@example.com");
 
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1L, updatedUserDTO));
     }
-
 
     @Test
     public void testDeleteUser_Success() {
@@ -186,7 +183,6 @@ public class UserServiceTest {
 
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(1L));
     }
-
 
     @Test
     public void testFindAllUsers_Success() {
@@ -326,6 +322,4 @@ public class UserServiceTest {
 
         assertThrows(UserNotFoundException.class, () -> userService.findUserById(1L));
     }
-
-
 }
