@@ -9,6 +9,7 @@ import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.BadRequestException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
+import br.com.senai.medicalone.exceptions.customexceptions.PatientHasLinkedRecordsException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
@@ -154,6 +155,9 @@ public class PatientService {
         Optional<Patient> patientOptional = patientRepository.findById(id);
         if (patientOptional.isPresent()) {
             Patient patient = patientOptional.get();
+            if (!patient.getExams().isEmpty() || !patient.getAppointments().isEmpty()) {
+                throw new PatientHasLinkedRecordsException("Paciente possui exames ou consultas vinculadas");
+            }
             User user = patient.getUser();
             patientRepository.deleteById(id);
             if (user != null) {
@@ -163,6 +167,7 @@ public class PatientService {
         } else {
             throw new PatientNotFoundException("Paciente não encontrado com ID: " + id);
         }
+
     }
 
     @Operation(summary = "Obter todos os pacientes", description = "Método para obter todos os pacientes")
