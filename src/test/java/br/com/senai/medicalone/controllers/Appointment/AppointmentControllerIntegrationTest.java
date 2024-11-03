@@ -238,7 +238,7 @@ public class AppointmentControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Consultas encontradas com sucesso"))
                 .andExpect(jsonPath("$.appointments[0].appointmentReason").value(appointmentRequestDTO.getAppointmentReason()))
-                .andExpect(jsonPath("$.page.size").value(10))
+                .andExpect(jsonPath("$.page.size").value(12))
                 .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.page.totalPages").value(1))
                 .andExpect(jsonPath("$.page.number").value(0));
