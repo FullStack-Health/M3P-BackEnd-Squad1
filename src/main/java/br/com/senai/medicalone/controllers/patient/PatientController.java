@@ -5,6 +5,7 @@ import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
+import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.services.patient.PatientRecordService;
 import br.com.senai.medicalone.services.patient.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -100,11 +101,15 @@ public class PatientController {
             @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Paciente não encontrado\"}")))
     })
     public ResponseEntity<Map<String, String>> deletePatient(@PathVariable Long id) {
-        boolean isDeleted = patientService.deletePatient(id);
-        if (isDeleted) {
-            return new ResponseEntity<>(Map.of("message", "Paciente excluído com sucesso"), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
+        try {
+            boolean isDeleted = patientService.deletePatient(id);
+            if (isDeleted) {
+                return new ResponseEntity<>(Map.of("message", "Paciente excluído com sucesso"), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(Map.of("message", "Paciente não encontrado"), HttpStatus.NOT_FOUND);
+            }
+        } catch (PatientNotFoundException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.NOT_FOUND);
         }
     }
 

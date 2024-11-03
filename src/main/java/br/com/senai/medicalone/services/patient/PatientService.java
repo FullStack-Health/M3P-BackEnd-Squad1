@@ -151,8 +151,14 @@ public class PatientService {
     })
     @Transactional
     public boolean deletePatient(Long id) {
-        if (patientRepository.existsById(id)) {
+        Optional<Patient> patientOptional = patientRepository.findById(id);
+        if (patientOptional.isPresent()) {
+            Patient patient = patientOptional.get();
+            User user = patient.getUser();
             patientRepository.deleteById(id);
+            if (user != null) {
+                userRepository.delete(user);
+            }
             return true;
         } else {
             throw new PatientNotFoundException("Paciente não encontrado com ID: " + id);
