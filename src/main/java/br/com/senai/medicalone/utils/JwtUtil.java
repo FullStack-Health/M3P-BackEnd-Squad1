@@ -70,6 +70,7 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().getAuthority());
         claims.put("patientId", user.getPatientId());
+        claims.put("name", user.getName());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())
