@@ -5,6 +5,7 @@ import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
 import br.com.senai.medicalone.entities.user.User;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
+import br.com.senai.medicalone.exceptions.customexceptions.PatientHasLinkedRecordsException;
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.services.patient.PatientRecordService;
 import br.com.senai.medicalone.services.patient.PatientService;
@@ -110,6 +111,8 @@ public class PatientController {
             }
         } catch (PatientNotFoundException e) {
             return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.NOT_FOUND);
+        } catch (PatientHasLinkedRecordsException e) {
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
         }
     }
 

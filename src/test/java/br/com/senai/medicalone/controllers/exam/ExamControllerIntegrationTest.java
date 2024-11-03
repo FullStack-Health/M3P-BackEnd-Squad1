@@ -236,11 +236,12 @@ public class ExamControllerIntegrationTest {
         examService.createExam(examRequestDTO);
 
         mockMvc.perform(get("/api/exames")
+                        .param("size", "12")
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Exames encontrados com sucesso"))
                 .andExpect(jsonPath("$.exams[0].name").value(examRequestDTO.getName()))
-                .andExpect(jsonPath("$.page.size").value(10))
+                .andExpect(jsonPath("$.page.size").value(12))
                 .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.page.totalPages").value(1))
                 .andExpect(jsonPath("$.page.number").value(0));

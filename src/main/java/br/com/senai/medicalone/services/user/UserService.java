@@ -145,6 +145,24 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
 
+        if (updatedUserDTO.getEmail() != null && !updatedUserDTO.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(updatedUserDTO.getEmail())) {
+                throw new DataConflictException("Email já cadastrado.");
+            }
+        }
+
+        if (updatedUserDTO.getCpf() != null && !updatedUserDTO.getCpf().equals(user.getCpf())) {
+            if (userRepository.existsByCpf(updatedUserDTO.getCpf())) {
+                throw new DataConflictException("CPF já cadastrado.");
+            }
+        }
+
+        if (updatedUserDTO.getPhone() != null && !updatedUserDTO.getPhone().equals(user.getPhone())) {
+            if (userRepository.existsByPhone(updatedUserDTO.getPhone())) {
+                throw new DataConflictException("Telefone já cadastrado.");
+            }
+        }
+
         if (updatedUserDTO.getName() != null) {
             user.setName(updatedUserDTO.getName());
         }
