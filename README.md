@@ -85,6 +85,17 @@ mvn spring-boot:run
 
 Por padrão, a aplicação roda na porta 8081.
 
+### Login de acesso padrão ao subir apliação
+```
+Perfil admin:
+User: admin@example.com
+Password: admin12345
+
+Perfil medico:
+User: medico@example.com
+Password: medico12345
+```
+
 ### Insomnia
 
 Uma collection do Insomnia está disponível em:

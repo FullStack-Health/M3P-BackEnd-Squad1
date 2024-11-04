@@ -193,6 +193,10 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
 
+        if (user.getRole() == RoleType.PACIENTE) {
+            throw new DataConflictException("Não é possível excluir usuários com perfil PACIENTE");
+        }
+
         userRepository.delete(user);
     }
 

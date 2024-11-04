@@ -167,7 +167,6 @@ public class PatientService {
         } else {
             throw new PatientNotFoundException("Paciente não encontrado com ID: " + id);
         }
-
     }
 
     @Operation(summary = "Obter todos os pacientes", description = "Método para obter todos os pacientes")
