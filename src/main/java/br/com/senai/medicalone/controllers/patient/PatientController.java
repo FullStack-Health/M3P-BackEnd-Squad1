@@ -58,7 +58,7 @@ public class PatientController {
             PatientResponseDTO responseDTO = patientService.createPatient(patientRequestDTO);
             return new ResponseEntity<>(Map.of("message", "Paciente criado com sucesso", "patient", responseDTO), HttpStatus.CREATED);
         } catch (PatientAlreadyExistsException e) {
-            return new ResponseEntity<>(Map.of("message", "Paciente já cadastrado"), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(Map.of("message", e.getMessage()), HttpStatus.CONFLICT);
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("message", "Dados ausentes ou incorretos"), HttpStatus.BAD_REQUEST);
         }
