@@ -13,6 +13,7 @@ import br.com.senai.medicalone.exceptions.customexceptions.PatientHasLinkedRecor
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
+import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.services.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,6 +49,9 @@ public class PatientService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PreRegisterUserRepository preRegisterUserRepository;
+
     @Operation(summary = "Criar um novo paciente", description = "Método para criar um novo paciente")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Paciente criado com sucesso"),
@@ -60,49 +64,44 @@ public class PatientService {
         String cleanedPhone = cleanString(patientRequestDTO.getPhone());
         String cleanedCpf = cleanString(patientRequestDTO.getCpf());
 
-        boolean emailExists = patientRepository.existsByEmail(patientRequestDTO.getEmail());
-        boolean cpfExists = patientRepository.existsByCpf(cleanedCpf);
-        boolean phoneExists = patientRepository.existsByPhone(cleanedPhone);
-
-        if (emailExists || cpfExists || phoneExists) {
-            throw new PatientAlreadyExistsException("Paciente já cadastrado");
+        if (patientRepository.existsByEmail(patientRequestDTO.getEmail()) || preRegisterUserRepository.existsByEmail(patientRequestDTO.getEmail())) {
+            throw new PatientAlreadyExistsException("Email já cadastrado");
+        }
+        if (patientRepository.existsByCpf(cleanedCpf)) {
+            throw new PatientAlreadyExistsException("CPF já cadastrado");
         }
 
-        try {
-            Patient patient = patientMapper.toEntity(patientRequestDTO);
-            patient.setPassword(passwordEncoder.encode(cleanedCpf));
-            patient.setCpf(cleanedCpf);
-            patient.setPhone(cleanedPhone);
+        Patient patient = patientMapper.toEntity(patientRequestDTO);
+        patient.setPassword(passwordEncoder.encode(cleanedCpf));
+        patient.setCpf(cleanedCpf);
+        patient.setPhone(cleanedPhone);
 
-            Optional<User> existingUser = userRepository.findByEmailOrCpf(patientRequestDTO.getEmail(), cleanedCpf);
-            if (existingUser.isPresent()) {
-                patient.setUser(existingUser.get());
-            } else {
-                UserRequestDTO userRequestDTO = new UserRequestDTO();
-                userRequestDTO.setName(patient.getFullName());
-                userRequestDTO.setEmail(patient.getEmail());
-                userRequestDTO.setBirthDate(patient.getBirthDate());
-                userRequestDTO.setPhone(cleanedPhone);
-                userRequestDTO.setCpf(cleanedCpf);
-                userRequestDTO.setPassword(cleanedCpf);
-                userRequestDTO.setRole(RoleType.PACIENTE);
+        Optional<User> existingUser = userRepository.findByEmailOrCpf(patientRequestDTO.getEmail(), cleanedCpf);
+        if (existingUser.isPresent()) {
+            patient.setUser(existingUser.get());
+        } else {
+            UserRequestDTO userRequestDTO = new UserRequestDTO();
+            userRequestDTO.setName(patient.getFullName());
+            userRequestDTO.setEmail(patient.getEmail());
+            userRequestDTO.setBirthDate(patient.getBirthDate());
+            userRequestDTO.setPhone(cleanedPhone);
+            userRequestDTO.setCpf(cleanedCpf);
+            userRequestDTO.setPassword(cleanedCpf);
+            userRequestDTO.setRole(RoleType.PACIENTE);
 
-                UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
+            UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO);
 
-                User newUser = userRepository.findById(userResponseDTO.getId()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-                patient.setUser(newUser);
-            }
-
-            patient = patientRepository.save(patient);
-
-            User user = patient.getUser();
-            user.setPatientId(patient.getId());
-            userRepository.save(user);
-
-            return patientMapper.toResponseDTO(patient);
-        } catch (DataIntegrityViolationException ex) {
-            throw new PatientAlreadyExistsException("Paciente já cadastrado");
+            User newUser = userRepository.findById(userResponseDTO.getId()).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            patient.setUser(newUser);
         }
+
+        patient = patientRepository.save(patient);
+
+        User user = patient.getUser();
+        user.setPatientId(patient.getId());
+        userRepository.save(user);
+
+        return patientMapper.toResponseDTO(patient);
     }
 
     private String cleanString(String value) {
