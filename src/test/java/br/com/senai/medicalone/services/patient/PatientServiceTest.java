@@ -11,6 +11,7 @@ import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsE
 import br.com.senai.medicalone.exceptions.customexceptions.PatientNotFoundException;
 import br.com.senai.medicalone.mappers.patient.PatientMapper;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
+import br.com.senai.medicalone.repositories.user.PreRegisterUserRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.services.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +53,9 @@ class PatientServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PreRegisterUserRepository preRegisterUserRepository;
 
     @BeforeEach
     void setUp() {
@@ -108,6 +112,7 @@ class PatientServiceTest {
 
         when(patientRepository.existsByEmail(anyString())).thenReturn(false);
         when(patientRepository.existsByCpf(anyString())).thenReturn(false);
+        when(preRegisterUserRepository.existsByEmail(anyString())).thenReturn(false);
         when(patientMapper.toEntity(any(PatientRequestDTO.class))).thenReturn(patient);
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
         when(patientMapper.toResponseDTO(any(Patient.class))).thenReturn(new PatientResponseDTO());

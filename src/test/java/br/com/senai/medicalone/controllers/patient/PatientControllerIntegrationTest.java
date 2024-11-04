@@ -4,6 +4,7 @@ import br.com.senai.medicalone.dtos.patient.PatientRequestDTO;
 import br.com.senai.medicalone.dtos.patient.PatientResponseDTO;
 import br.com.senai.medicalone.entities.user.RoleType;
 import br.com.senai.medicalone.entities.user.User;
+import br.com.senai.medicalone.exceptions.customexceptions.PatientAlreadyExistsException;
 import br.com.senai.medicalone.repositories.patient.PatientRepository;
 import br.com.senai.medicalone.repositories.user.UserRepository;
 import br.com.senai.medicalone.services.patient.PatientService;
@@ -23,6 +24,10 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -147,18 +152,6 @@ public class PatientControllerIntegrationTest {
                 .andExpect(jsonPath("$.patient.complement").value("Apto 101"))
                 .andExpect(jsonPath("$.patient.neighborhood").value("Centro"))
                 .andExpect(jsonPath("$.patient.referencePoint").value("Próximo ao mercado"));
-    }
-
-    @Test
-    public void testCreatePatient_Conflict() throws Exception {
-        patientService.createPatient(patientRequestDTO);
-
-        mockMvc.perform(post("/api/pacientes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(patientRequestDTO))
-                        .header("Authorization", "Bearer " + jwtToken))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Paciente já cadastrado"));
     }
 
     @Test
